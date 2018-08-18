@@ -52,7 +52,9 @@
 
 
 // All the motor definitions
-#define PORT_DRIVELEFT 1
-#define PORT_DRIVERIGHT 2
+#define PORT_DRIVELEFTFRONT 1
+#define PORT_DRIVERIGHTFRONT 2
 #define PORT_FLYWHEEL 3
 #define PORT_INTAKE 4
+#define PORT_DRIVELEFTBACK 1
+#define PORT_DRIVERIGHTBACK 1

@@ -11,8 +11,10 @@ void drive(void* param){
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
         int turn = controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
         // printf("%d, %d\n", left, right);
-        motor_move(PORT_DRIVELEFT, forward + turn);
-        motor_move(PORT_DRIVERIGHT, forward - turn);
+        motor_move(PORT_DRIVELEFTFRONT, forward + turn);
+        motor_move(PORT_DRIVERIGHTFRONT, forward - turn);
+        motor_move(PORT_DRIVELEFTBACK, forward + turn);
+        motor_move(PORT_DRIVERIGHTBACK, forward - turn);
         delay(20);
   }
 }
