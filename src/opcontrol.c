@@ -6,6 +6,8 @@
 #define OVERRIDETEMP false
 #define MAXALLOWEDTEMP 45
 
+int intakeDirection = 0;
+
 void drive(void* param){
     while (true) {
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
@@ -37,19 +39,23 @@ void flywheel(void* param){
 void intake(void* param){
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1)){
-            if (motor_get_power(PORT_INTAKE) != 127){
+            if (intakeDirection != 1){
                 motor_move(PORT_INTAKE, 127);
+                intakeDirection = 1;
             }
             else {
                 motor_move(PORT_INTAKE, 0);
+                intakeDirection = 0;
             }
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2)){
-            if (motor_get_power(PORT_INTAKE) != -127){
+            if (intakeDirection != -1){
                 motor_move(PORT_INTAKE, -127);
+                intakeDirection = -1;
             }
             else {
                 motor_move(PORT_INTAKE, 0);
+                intakeDirection = 0;
             }
         }
     }
