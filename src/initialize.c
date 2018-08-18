@@ -37,7 +37,7 @@ void initialize() {
   lcd_register_btn1_cb(on_center_button);
 
   initializeDriveMotors();
-  intializeFlywheelMotor();
+  initializeFlywheelMotor();
   initializeIntakeMotor();
 }
 
