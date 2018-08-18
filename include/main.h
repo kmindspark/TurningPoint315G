@@ -49,3 +49,10 @@
 #endif
 
 #endif  // _PROS_MAIN_H_
+
+
+// All the motor definitions
+#define PORT_DRIVELEFT 1
+#define PORT_DRIVERIGHT 2
+#define PORT_FLYWHEEL 3
+#define PORT_INTAKE 4

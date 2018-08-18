@@ -13,7 +13,7 @@ void on_center_button() {
 void initialize() {
   lcd_initialize();
   lcd_set_text(1, "Hello Beta Testers!");
-
+  
   lcd_register_btn1_cb(on_center_button);
 }
 
