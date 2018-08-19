@@ -89,8 +89,27 @@ void intake(void* param){
     }
 }
 
+char* genString(char* infoString, float infoVal){
+    char buffer[100];
+    sprintf(buffer,  "%s: %v", infoString, infoVal);
+    return buffer;
+}
+
+void displayInfo(void* param){
+    lv_theme_t * th = lv_theme_zen_init(210, &lv_font_symbol_20);
+    lv_theme_set_current(th);
+    
+    while (true) {
+        lv_obj_t * info = lv_label_create(lv_scr_act, NULL);
+        char* tempString = genString("Flywheel Temperature", motor_get_temperature(PORT_FLYWHEEL));
+        lv_label_set_text(info, tempString);
+        delay(500);
+    }
+}
+
 void opcontrol() {
     task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
     task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
     task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
+    task_t displayInfoTask = task_create(displayInfo, "PROS", TASK_PRIORITY_MIN, TASK_STACK_DEPTH_DEFAULT, "Display Task");
 }
