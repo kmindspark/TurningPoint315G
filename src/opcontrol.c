@@ -89,19 +89,11 @@ void intake(void* param){
     }
 }
 
-char* genString(char* infoString, float infoVal){
-    char buffer[100];
-    sprintf(buffer,  "%s: %v", infoString, infoVal);
-    return buffer;
-}
-
 void displayInfo(void* param){
-    lv_theme_t * th = lv_theme_zen_init(210, &lv_font_symbol_20);
-    lv_theme_set_current(th);
-    
     while (true) {
-        lv_obj_t * info = lv_label_create(lv_scr_act, NULL);
-        char* tempString = genString("Flywheel Temperature", motor_get_temperature(PORT_FLYWHEEL));
+        lv_obj_t * info = lv_label_create(lv_scr_act(), NULL);
+        char tempString[100];
+        sprintf(tempString, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
         lv_label_set_text(info, tempString);
         delay(500);
     }
