@@ -1,9 +1,9 @@
 #include "main.h"
 
-#define HIGHFLAGPOWER 95
+#define HIGHFLAGPOWER 100
 #define MIDDLEFLAGPOWER 60
 
-#define OVERRIDETEMP false
+#define OVERRIDETEMP true
 #define MAXALLOWEDTEMP 45
 
 int intakeDirection = 0;
@@ -12,7 +12,6 @@ void drive(void* param){
     while (true) {
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
         int turn = controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
-        // printf("%d, %d\n", left, right);
         motor_move(PORT_DRIVELEFTFRONT, forward + turn);
         motor_move(PORT_DRIVERIGHTFRONT, forward - turn);
         motor_move(PORT_DRIVELEFTBACK, forward + turn);
@@ -27,6 +26,8 @@ void flywheel(void* param){
             motor_move_velocity(PORT_FLYWHEEL, HIGHFLAGPOWER);
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A)){
+            motor_move_velocity(PORT_FLYWHEEL, -10);
+            delay(500);
             motor_move_velocity(PORT_FLYWHEEL, MIDDLEFLAGPOWER);
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) || 
