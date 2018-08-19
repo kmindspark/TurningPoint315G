@@ -1,21 +1,28 @@
 #include "main.h"
 
 #define HIGHFLAGPOWER 100
-#define MIDDLEFLAGPOWER 60
+#define MIDDLEFLAGPOWER 80
 
 #define OVERRIDETEMP true
 #define MAXALLOWEDTEMP 45
 
 int intakeDirection = 0;
+int currentFlywheelRPM = 0;
 
 void drive(void* param){
     while (true) {
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
         int turn = controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
-        motor_move(PORT_DRIVELEFTFRONT, forward + turn);
+        /*motor_move(PORT_DRIVELEFTFRONT, forward + turn);
         motor_move(PORT_DRIVERIGHTFRONT, forward - turn);
         motor_move(PORT_DRIVELEFTBACK, forward + turn);
-        motor_move(PORT_DRIVERIGHTBACK, forward - turn);
+        motor_move(PORT_DRIVERIGHTBACK, forward - turn);*/
+
+        adi_motor_set(PORT_DRIVELEFTFRONT, forward + turn);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, forward - turn);
+        adi_motor_set(PORT_DRIVELEFTBACK, forward + turn);
+        adi_motor_set(PORT_DRIVERIGHTBACK, forward - turn);
+
         delay(20);
   }
 }
@@ -23,15 +30,33 @@ void drive(void* param){
 void flywheel(void* param){
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X)){
-            motor_move_velocity(PORT_FLYWHEEL, HIGHFLAGPOWER);
+            currentFlywheelRPM = HIGHFLAGPOWER;
+            //motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
+            motor_move(PORT_FLYWHEEL, 127);
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A)){
             motor_move_velocity(PORT_FLYWHEEL, -10);
             delay(500);
-            motor_move_velocity(PORT_FLYWHEEL, MIDDLEFLAGPOWER);
+            currentFlywheelRPM = MIDDLEFLAGPOWER;
+            motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
+        }
+        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN)){
+            if (currentFlywheelRPM > 0){
+                currentFlywheelRPM--;
+                motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
+                wait1Msec(100);
+            }
+        }
+        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP)){
+            if (currentFlywheelRPM < 100){
+                currentFlywheelRPM++;
+                motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
+                wait1Msec(100);
+            }   
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) || 
             (motor_get_temperature(PORT_FLYWHEEL) > MAXALLOWEDTEMP && !OVERRIDETEMP)){
+            currentFlywheelRPM = 0;
             motor_move(PORT_FLYWHEEL, 0);
         }
     }
@@ -48,6 +73,7 @@ void intake(void* param){
                 motor_move(PORT_INTAKE, 0);
                 intakeDirection = 0;
             }
+            delay(200);
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2)){
             if (intakeDirection != -1){
@@ -58,6 +84,7 @@ void intake(void* param){
                 motor_move(PORT_INTAKE, 0);
                 intakeDirection = 0;
             }
+            delay(200);
         }
     }
 }
