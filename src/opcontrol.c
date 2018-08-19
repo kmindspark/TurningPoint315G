@@ -44,14 +44,14 @@ void flywheel(void* param){
             if (currentFlywheelRPM > 0){
                 currentFlywheelRPM--;
                 motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
-                wait1Msec(100);
+                delay(100);
             }
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP)){
             if (currentFlywheelRPM < 100){
                 currentFlywheelRPM++;
                 motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
-                wait1Msec(100);
+                delay(100);
             }   
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) || 
