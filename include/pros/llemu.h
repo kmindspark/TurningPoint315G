@@ -23,14 +23,7 @@
 #define _PROS_LLEMU_H_
 
 #include <errno.h>
-
-#include "display/lvgl.h"
-
-#ifdef __cplusplus
-extern "C" {
-namespace pros {
-namespace c {
-#endif
+#include "pros/tmei.h"
 
 typedef void (*lcd_btn_cb_fn_t)(void);
 
@@ -38,16 +31,11 @@ typedef void (*lcd_btn_cb_fn_t)(void);
 #define LCD_BTN_CENTER 2
 #define LCD_BTN_RIGHT 1
 
-typedef struct lcd_s {
-  lv_obj_t *frame;
-  lv_obj_t *screen;
-  lv_obj_t *lcd_text[8];
-  lv_obj_t *btn_container;
-  lv_obj_t *btns[3];            /**< 0 => left; 1 => center; 2 => right */
-  lcd_btn_cb_fn_t callbacks[3]; /**< 0 => left; 1 => center; 2 => right */
-  volatile uint8_t touch_bits;  /**< 4 => left; 2 => center; 1 => right (no
-                                   multitouch support) */
-} lcd_s_t;
+#ifdef __cplusplus
+extern "C" {
+namespace pros {
+namespace c {
+#endif
 
 /**
  * Checks whether the emulated three-button LCD has already been initialized.
@@ -97,7 +85,7 @@ bool lcd_shutdown(void);
  * \return True if the operation was successful, or false otherwise, setting
  *         errno values as specified above.
  */
-bool lcd_print(int16_t line, const char *fmt, ...);
+bool lcd_print(int16_t line, const char* fmt, ...);
 
 /**
  * Displays a string on the emulated three-button LCD screen.
@@ -115,7 +103,7 @@ bool lcd_print(int16_t line, const char *fmt, ...);
  * \return True if the operation was successful, or false otherwise, setting
  *         errno values as specified above.
  */
-bool lcd_set_text(int16_t line, const char *text);
+bool lcd_set_text(int16_t line, const char* text);
 
 /**
  * Clears the contents of the emulated three-button LCD screen.
@@ -152,17 +140,10 @@ bool lcd_clear_line(int16_t line);
  * When the leftmost button on the emulated three-button LCD is pressed, the
  * user-provided callback function will be invoked.
  *
- * This function uses the following values of errno when an error state is
- * reached:
- * ENXIO  - The LCD has not been initialized. Call lcd_initialize() first.
- *
  * \param cb
- *        A callback function of type lcd_btn_cb_fn_t (void (*cb)(void))
- *
- * \return True if the operation was successful, or false otherwise, setting
- *         errno values as specified above.
+ *        A callback function of type lcd_btn_cb_fn_t(void (*cb)(void))
  */
-bool lcd_register_btn0_cb(lcd_btn_cb_fn_t cb);
+void lcd_register_btn0_cb(lcd_btn_cb_fn_t cb);
 
 /**
  * Registers a callback function for the center button.
@@ -170,17 +151,10 @@ bool lcd_register_btn0_cb(lcd_btn_cb_fn_t cb);
  * When the center button on the emulated three-button LCD is pressed, the
  * user-provided callback function will be invoked.
  *
- * This function uses the following values of errno when an error state is
- * reached:
- * ENXIO  - The LCD has not been initialized. Call lcd_initialize() first.
- *
  * \param cb
- *        A callback function of type lcd_btn_cb_fn_t (void (*cb)(void))
- *
- * \return True if the operation was successful, or false otherwise, setting
- *         errno values as specified above.
+ *        A callback function of type lcd_btn_cb_fn_t(void (*cb)(void))
  */
-bool lcd_register_btn1_cb(lcd_btn_cb_fn_t cb);
+void lcd_register_btn1_cb(lcd_btn_cb_fn_t cb);
 
 /**
  * Registers a callback function for the rightmost button.
@@ -188,17 +162,10 @@ bool lcd_register_btn1_cb(lcd_btn_cb_fn_t cb);
  * When the rightmost button on the emulated three-button LCD is pressed, the
  * user-provided callback function will be invoked.
  *
- * This function uses the following values of errno when an error state is
- * reached:
- * ENXIO  - The LCD has not been initialized. Call lcd_initialize() first.
- *
  * \param cb
- *        A callback function of type lcd_btn_cb_fn_t (void (*cb)(void))
- *
- * \return True if the operation was successful, or false otherwise, setting
- *         errno values as specified above.
+ *        A callback function of type lcd_btn_cb_fn_t(void (*cb)(void))
  */
-bool lcd_register_btn2_cb(lcd_btn_cb_fn_t cb);
+void lcd_register_btn2_cb(lcd_btn_cb_fn_t cb);
 
 /**
  * Gets the button status from the emulated three-button LCD.
@@ -221,4 +188,5 @@ uint8_t lcd_read_buttons(void);
 }
 }
 #endif
-#endif // _PROS_LLEMU_H_
+
+#endif  // _PROS_LLEMU_H_

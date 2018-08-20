@@ -19,9 +19,9 @@ void drive(void* param){
         motor_move(PORT_DRIVERIGHTBACK, forward - turn);*/
 
         adi_motor_set(PORT_DRIVELEFTFRONT, forward + turn);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, forward - turn);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, -(forward - turn));
         adi_motor_set(PORT_DRIVELEFTBACK, forward + turn);
-        adi_motor_set(PORT_DRIVERIGHTBACK, forward - turn);
+        adi_motor_set(PORT_DRIVERIGHTBACK, -(forward - turn));
 
         delay(20);
   }
@@ -93,7 +93,7 @@ void displayInfo(void* param){
     while (true) {
         lv_obj_t * info = lv_label_create(lv_scr_act(), NULL);
         char tempString[100];
-        sprintf(tempString, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
+        //sprintf(tempString, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
         lv_label_set_text(info, tempString);
         delay(500);
     }
