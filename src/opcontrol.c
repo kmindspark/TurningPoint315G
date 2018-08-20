@@ -1,13 +1,13 @@
 #include "main.h"
 
-#define HIGHFLAGPOWER 100
+#define HIGHFLAGPOWER 127
 #define MIDDLEFLAGPOWER 80
 
 #define OVERRIDETEMP true
 #define MAXALLOWEDTEMP 45
 
 int intakeDirection = 0;
-int currentFlywheelRPM = 0;
+int currentFlywheelPower = 0;
 
 void drive(void* param){
     while (true) {
@@ -19,9 +19,9 @@ void drive(void* param){
         motor_move(PORT_DRIVERIGHTBACK, forward - turn);*/
 
         adi_motor_set(PORT_DRIVELEFTFRONT, forward + turn);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, -(forward - turn));
+        adi_motor_set(PORT_DRIVERIGHTFRONT, forward - turn);
         adi_motor_set(PORT_DRIVELEFTBACK, forward + turn);
-        adi_motor_set(PORT_DRIVERIGHTBACK, -(forward - turn));
+        adi_motor_set(PORT_DRIVERIGHTBACK, forward - turn);
 
         delay(20);
   }
@@ -30,34 +30,34 @@ void drive(void* param){
 void flywheel(void* param){
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X)){
-            currentFlywheelRPM = HIGHFLAGPOWER;
-            //motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
+            currentFlywheelPower = HIGHFLAGPOWER;
+            //motor_move_velocity(PORT_FLYWHEEL, currentFlywheelPower);
             motor_move(PORT_FLYWHEEL, 127);
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A)){
-            motor_move_velocity(PORT_FLYWHEEL, -10);
+            motor_move(PORT_FLYWHEEL, -10);
             delay(500);
-            currentFlywheelRPM = MIDDLEFLAGPOWER;
-            motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
+            currentFlywheelPower = MIDDLEFLAGPOWER;
+            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN)){
-            if (currentFlywheelRPM > 0){
-                currentFlywheelRPM--;
-                motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
+            if (currentFlywheelPower > 0){
+                currentFlywheelPower--;
+                motor_move(PORT_FLYWHEEL, currentFlywheelPower);
                 delay(100);
             }
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP)){
-            if (currentFlywheelRPM < 100){
-                currentFlywheelRPM++;
-                motor_move_velocity(PORT_FLYWHEEL, currentFlywheelRPM);
+            if (currentFlywheelPower < 100){
+                currentFlywheelPower++;
+                motor_move(PORT_FLYWHEEL, currentFlywheelPower);
                 delay(100);
             }   
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) || 
             (motor_get_temperature(PORT_FLYWHEEL) > MAXALLOWEDTEMP && !OVERRIDETEMP)){
-            currentFlywheelRPM = 0;
-            motor_move(PORT_FLYWHEEL, 0);
+            currentFlywheelPower = 0;
+            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
         }
     }
 }
@@ -93,8 +93,8 @@ void displayInfo(void* param){
     while (true) {
         lv_obj_t * info = lv_label_create(lv_scr_act(), NULL);
         char tempString[100];
-        //sprintf(tempString, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
-        lv_label_set_text(info, tempString);
+        sprintf(tempString, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
+        lv_label_set_text(info, "TEMP");
         delay(500);
     }
 }
