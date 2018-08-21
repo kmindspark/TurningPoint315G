@@ -2,6 +2,7 @@
 
 #define HIGHFLAGPOWER 127
 #define MIDDLEFLAGPOWER 80
+#define MIDDLEFLAGRPM 66
 
 #define OVERRIDETEMP true
 #define MAXALLOWEDTEMP 45
@@ -45,7 +46,9 @@ void flywheel(void* param){
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A)){
             motor_move(PORT_FLYWHEEL, -10);
-            delay(200);
+            while (motor_get_actual_velocity(PORT_FLYWHEEL) > MIDDLEFLAGRPM){
+
+            }
             currentFlywheelPower = MIDDLEFLAGPOWER;
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
         }
