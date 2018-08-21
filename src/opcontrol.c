@@ -1,14 +1,20 @@
 #include "main.h"
 
 #define HIGHFLAGPOWER 127
+#define HIGHFLAGRPM 100
 #define MIDDLEFLAGPOWER 80
 #define MIDDLEFLAGRPM 66
+#define BETWEENFLAGPOWER 115
+#define BETWEEENFLAGRPM 90
 
 #define OVERRIDETEMP true
 #define MAXALLOWEDTEMP 45
 
 int intakeDirection = 0;
 int currentFlywheelPower = 0;
+int currentFlywheelGoalRPM = 0;
+
+bool knownRPM = false;
 
  #define max(a,b) \
    ({ __typeof__ (a) _a = (a); \
@@ -41,35 +47,59 @@ void flywheel(void* param){
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X)){
             currentFlywheelPower = HIGHFLAGPOWER;
-            //motor_move_velocity(PORT_FLYWHEEL, currentFlywheelPower);
+            currentFlywheelGoalRPM = HIGHFLAGPOWER;
             motor_move(PORT_FLYWHEEL, 127);
+            knownRPM = true;
         }
-        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A)){
-            motor_move(PORT_FLYWHEEL, -10);
-            while (motor_get_actual_velocity(PORT_FLYWHEEL) > MIDDLEFLAGRPM){
-
-            }
+        else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A)){
             currentFlywheelPower = MIDDLEFLAGPOWER;
+            currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+            knownRPM = true;
         }
-        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN)){
+        else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y)){
+            currentFlywheelPower = BETWEENFLAGPOWER;
+            currentFlywheelGoalRPM = BETWEEENFLAGRPM;
+            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+            knownRPM = true;
+        }
+        else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN)){
             if (currentFlywheelPower > 0){
                 currentFlywheelPower--;
                 motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-                delay(100);
+                delay(300);
+                knownRPM = false;
             }
         }
-        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP)){
+        else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP)){
             if (currentFlywheelPower < 127){
                 currentFlywheelPower++;
                 motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-                delay(100);
+                delay(300);
+                knownRPM = false;
             }   
         }
-        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) || 
+        else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) || 
             (motor_get_temperature(PORT_FLYWHEEL) > MAXALLOWEDTEMP && !OVERRIDETEMP)){
             currentFlywheelPower = 0;
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+            knownRPM = false;
+        }
+        else {
+            if (motor_get_actual_velocity(PORT_FLYWHEEL) > currentFlywheelGoalRPM + 2){
+                motor_move(PORT_FLYWHEEL, -30);
+                while (motor_get_actual_velocity(PORT_FLYWHEEL) > currentFlywheelGoalRPM){
+
+                }
+                motor_move(PORT_FLYWHEEL, currentFlywheelPower)
+            }
+            if (motor_get_actual_velocity(PORT_FLYWHEEL) < currentFlywheelGoalRPM - 2){
+                motor_move(PORT_FLYWHEEL, 127);
+                while (motor_get_actual_velocity(PORT_FLYWHEEL) < currentFlywheelGoalRPM){
+
+                }
+                motor_move(PORT_FLYWHEEL, currentFlywheelPower)
+            }
         }
     }
 }
@@ -85,7 +115,7 @@ void intake(void* param){
                 motor_move(PORT_INTAKE, 0);
                 intakeDirection = 0;
             }
-            delay(200);
+            delay(300);
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2)){
             if (intakeDirection != -1){
@@ -96,7 +126,7 @@ void intake(void* param){
                 motor_move(PORT_INTAKE, 0);
                 intakeDirection = 0;
             }
-            delay(200);
+            delay(300);
         }
     }
 }
