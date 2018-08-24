@@ -87,6 +87,22 @@ void flywheel(void* param){
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             knownRPM = false;
         }
+        else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT)){
+            intakeDirection = 1;
+            motor_move(PORT_INTAKE, 127);
+            //rapid fire
+            while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0  > currentFlywheelGoalRPM - 4){
+            
+            }
+            motor_move(PORT_FLYWHEEL, -15);
+            currentFlywheelGoalRPM = MIDDLEFLAGRPM;
+            currentFlywheelPower = MIDDLEFLAGPOWER;
+            while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 15){
+
+            }
+
+            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+        }
         else if (knownRPM) {
             if (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 15){
                 motor_move(PORT_FLYWHEEL, -15);
