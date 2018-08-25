@@ -10,6 +10,9 @@
 #define OVERRIDETEMP true
 #define MAXALLOWEDTEMP 45
 
+#define NUM_VISION_OBJECTS 2
+#define REDFLAGSIG 1
+
 int intakeDirection = 0;
 int currentFlywheelPower = 0;
 int currentFlywheelGoalRPM = 0;
@@ -28,6 +31,18 @@ bool knownRPM = false;
 
 void drive(void* param){
     while (true) {
+        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X)){
+            adi_motor_set(PORT_DRIVELEFTFRONT, 90);
+            adi_motor_set(PORT_DRIVERIGHTFRONT, -90);
+
+            vision_object_s_t object_arr[NUM_VISION_OBJECTS];
+            vision_read_by_sig(PORT_VISION, 0, REDFLAGSIG, NUM_VISION_OBJECTS, object_arr);
+            vision_object_s_t middle_flag = object_arr[0];
+            while (middle_flag.x_middle_coord < VISION_FOV_WIDTH/2){
+                vision_read_by_sig(PORT_VISION, 0, REDFLAGSIG, NUM_VISION_OBJECTS, object_arr);
+                middle_flag = object_arr[0];
+            }
+        }
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
         int turn = -1*controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
         /*motor_move(PORT_DRIVELEFTFRONT, forward + turn);
@@ -40,11 +55,12 @@ void drive(void* param){
         adi_motor_set(PORT_DRIVERIGHTBACK, forward - turn);
 
         delay(20);
-  }
+    }
+
+    
 }
 
 void flywheel(void* param){
-
     lcd_initialize();
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X)){
