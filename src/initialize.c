@@ -1,5 +1,7 @@
 #include "main.h"
+#include "config.h"
 
+/*
 void on_center_button() {
   static bool pressed = false;
   pressed = !pressed;
@@ -8,7 +10,7 @@ void on_center_button() {
   } else {
     lcd_clear_line(2);
   }
-}
+}*/
 
 void initializeDriveMotors(){
     /*motor_set_gearing(PORT_DRIVELEFTFRONT, E_MOTOR_GEARSET_18);
@@ -37,9 +39,9 @@ void initializeIntakeMotor(){
 }
 
 void initialize() {
-  lcd_initialize();
+  /*lcd_initialize();
   lcd_set_text(1, "Hello Beta Testers!");
-  lcd_register_btn1_cb(on_center_button);
+  lcd_register_btn1_cb(on_center_button);*/
 
   initializeDriveMotors();
   initializeFlywheelMotor();

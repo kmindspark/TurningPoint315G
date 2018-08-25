@@ -36,18 +36,17 @@ bool knownRPM = false;
 void turnToFlag(){
     adi_motor_set(PORT_DRIVELEFTFRONT, -40);
     adi_motor_set(PORT_DRIVERIGHTFRONT, 40);
-    vision_object_s_t object_arr[NUM_VISION_OBJECTS];
-    vision_read_by_sig(PORT_VISION, 0, 1, NUM_VISION_OBJECTS, object_arr);
-    vision_object_s_t middle_flag = object_arr[0];
-    while (middle_flag.x_middle_coord > VISION_FOV_WIDTH/2){
-        printf("%d\n", (int) middle_flag.x_middle_coord);
-        printf("%f\n", sizeof(object_arr)/sizeof(object_arr[0]));
-        middleFlagXCoord = (int) middle_flag.x_middle_coord;
-        vision_object_s_t object_arr[NUM_VISION_OBJECTS];
-        vision_read_by_sig(PORT_VISION, 0, 1, NUM_VISION_OBJECTS, object_arr);
-        middle_flag = object_arr[0];
-        delay(200);
+    vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, 2);
+    printf("%d\n", sizeFlag.x_middle_coord);
+    printf("%d\n", sizeFlag.x_middle_coord);
+    while (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
+        printf("%d\n", (int) sizeFlag.x_middle_coord);
+        sizeFlag = vision_get_by_sig(PORT_VISION, 0, 2);
+        delay(20);
     }
+    adi_motor_set(PORT_DRIVELEFTFRONT, 20);
+    adi_motor_set(PORT_DRIVERIGHTFRONT, -20);
+    delay(100);
 }
 
 void drive(void* param){
@@ -167,6 +166,7 @@ void flywheel(void* param){
                 motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             }
         }
+        delay(20);
     }
 }
 
@@ -194,6 +194,7 @@ void intake(void* param){
             }
             delay(300);
         }
+        delay(20);
     }
 }
 
@@ -214,6 +215,7 @@ void capLift(void* param){
             motor_move(PORT_CAPLIFT, 0);
         }
     }
+    delay(20);
 }
 
 void displayInfo(void* param){
@@ -224,6 +226,7 @@ void displayInfo(void* param){
         char tempString3[100];
         char tempString4[100];
         char tempString5[100];
+
         sprintf(tempString1, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
         sprintf(tempString2, "Current Velocity: %f", motor_get_actual_velocity(PORT_FLYWHEEL));
         sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
@@ -239,32 +242,18 @@ void displayInfo(void* param){
     }
 }
 
-void lvglInfo(void* param){
-    while (true) {
-        lv_obj_t* info = lv_label_create(lv_scr_act(), NULL);
-        char tempString[100];
-        sprintf(tempString, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
-        lv_label_set_text(info, "TEMP");
-        delay(500);
-    }
+void lvglInfo(){ //
+    lv_obj_t * title = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(title, "Title Label");
+    lv_obj_align(title, NULL, LV_ALIGN_IN_TOP_MID, 0, 20);
 }
 
 
 void opcontrol() {
-    /*while (true) {
-        vision_object_s_t rtn = vision_get_by_sig(PORT_VISION, 0, 2);
-        // Gets the largest object of the EXAMPLE_SIG signature
-        //printf("sig: %d", rtn.signature);
-        //printf("count: %d", vision_get_object_count(PORT_VISION));
-        printf("position: %d\n", rtn.x_middle_coord);
-        // Prints "sig: 1"
-        delay(2);
-    }*/
-    
     task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
-    task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
-    task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
-    task_t displayInfoTask = task_create(lvglInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Task");
-    task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
+    //task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
+    //task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
+    //task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
     
+    lvglInfo();
 }
