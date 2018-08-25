@@ -1,4 +1,5 @@
 #include "main.h"
+#include "config.h"
 #include <stdio.h>
 #include <inttypes.h>
 
@@ -32,24 +33,27 @@ bool knownRPM = false;
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
 
+void turnToFlag(){
+    adi_motor_set(PORT_DRIVELEFTFRONT, -40);
+    adi_motor_set(PORT_DRIVERIGHTFRONT, 40);
+    vision_object_s_t object_arr[NUM_VISION_OBJECTS];
+    vision_read_by_sig(PORT_VISION, 0, 1, NUM_VISION_OBJECTS, object_arr);
+    vision_object_s_t middle_flag = object_arr[0];
+    while (middle_flag.x_middle_coord > VISION_FOV_WIDTH/2){
+        printf("%d\n", (int) middle_flag.x_middle_coord);
+        printf("%f\n", sizeof(object_arr)/sizeof(object_arr[0]));
+        middleFlagXCoord = (int) middle_flag.x_middle_coord;
+        vision_object_s_t object_arr[NUM_VISION_OBJECTS];
+        vision_read_by_sig(PORT_VISION, 0, 1, NUM_VISION_OBJECTS, object_arr);
+        middle_flag = object_arr[0];
+        delay(200);
+    }
+}
+
 void drive(void* param){
-    
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
-            adi_motor_set(PORT_DRIVELEFTFRONT, -20);
-            adi_motor_set(PORT_DRIVERIGHTFRONT, 20);
-            vision_object_s_t object_arr[NUM_VISION_OBJECTS];
-            vision_read_by_sig(PORT_VISION, 0, 1, NUM_VISION_OBJECTS, object_arr);
-            vision_object_s_t middle_flag = object_arr[0];
-            while (middle_flag.x_middle_coord > VISION_FOV_WIDTH/2){
-                printf("%d\n", (int) middle_flag.x_middle_coord);
-                printf("%f\n", sizeof(object_arr)/sizeof(object_arr[0]));
-                middleFlagXCoord = (int) middle_flag.x_middle_coord;
-                vision_object_s_t object_arr[NUM_VISION_OBJECTS];
-                vision_read_by_sig(PORT_VISION, 0, 1, NUM_VISION_OBJECTS, object_arr);
-                middle_flag = object_arr[0];
-                delay(200);
-            }
+            turnToFlag();
         }
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
         int turn = -1*controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);

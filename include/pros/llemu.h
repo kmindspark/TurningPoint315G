@@ -23,7 +23,16 @@
 #define _PROS_LLEMU_H_
 
 #include <errno.h>
-#include "pros/tmei.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include "display/lvgl.h"
+#pragma GCC diagnostic pop
+
+#ifdef __cplusplus
+extern "C" {
+namespace pros {
+#endif
 
 typedef void (*lcd_btn_cb_fn_t)(void);
 
@@ -31,9 +40,18 @@ typedef void (*lcd_btn_cb_fn_t)(void);
 #define LCD_BTN_CENTER 2
 #define LCD_BTN_RIGHT 1
 
+typedef struct lcd_s {
+	lv_obj_t* frame;
+	lv_obj_t* screen;
+	lv_obj_t* lcd_text[8];
+	lv_obj_t* btn_container;
+	lv_obj_t* btns[3];            /**< 0 => left; 1 => center; 2 => right */
+	lcd_btn_cb_fn_t callbacks[3]; /**< 0 => left; 1 => center; 2 => right */
+	volatile uint8_t touch_bits;  /**< 4 => left; 2 => center; 1 => right (no
+	                                 multitouch support) */
+} lcd_s_t;
+
 #ifdef __cplusplus
-extern "C" {
-namespace pros {
 namespace c {
 #endif
 
@@ -48,7 +66,7 @@ bool lcd_is_initialized(void);
  * Creates an emulation of the three-button, UART-based VEX LCD on the display.
  *
  * \return True if the LCD was successfully initialized, or false if it has
- *         already been initialized.
+ * already been initialized.
  */
 bool lcd_initialize(void);
 
@@ -63,7 +81,7 @@ bool lcd_initialize(void);
  * ENXIO - The LCD has not been initialized. Call lcd_initialize() first.
  *
  * \return True if the operation was successful, or false otherwise, setting
- *         errno values as specified above.
+ * errno values as specified above.
  */
 bool lcd_shutdown(void);
 
@@ -83,7 +101,7 @@ bool lcd_shutdown(void);
  *        Optional list of arguments for the format string
  *
  * \return True if the operation was successful, or false otherwise, setting
- *         errno values as specified above.
+ * errno values as specified above.
  */
 bool lcd_print(int16_t line, const char* fmt, ...);
 
@@ -101,7 +119,7 @@ bool lcd_print(int16_t line, const char* fmt, ...);
  *        The text to display
  *
  * \return True if the operation was successful, or false otherwise, setting
- *         errno values as specified above.
+ * errno values as specified above.
  */
 bool lcd_set_text(int16_t line, const char* text);
 
@@ -114,7 +132,7 @@ bool lcd_set_text(int16_t line, const char* text);
  * EINVAL - The line number specified is not in the range [0-7]
  *
  * \return True if the operation was successful, or false otherwise, setting
- *         errno values as specified above.
+ * errno values as specified above.
  */
 bool lcd_clear(void);
 
@@ -130,7 +148,7 @@ bool lcd_clear(void);
  *        The line to clear
  *
  * \return True if the operation was successful, or false otherwise, setting
- *         errno values as specified above.
+ * errno values as specified above.
  */
 bool lcd_clear_line(int16_t line);
 
@@ -140,10 +158,17 @@ bool lcd_clear_line(int16_t line);
  * When the leftmost button on the emulated three-button LCD is pressed, the
  * user-provided callback function will be invoked.
  *
+ * This function uses the following values of errno when an error state is
+ * reached:
+ * ENXIO  - The LCD has not been initialized. Call lcd_initialize() first.
+ *
  * \param cb
- *        A callback function of type lcd_btn_cb_fn_t(void (*cb)(void))
+ *        A callback function of type lcd_btn_cb_fn_t (void (*cb)(void))
+ *
+ * \return True if the operation was successful, or false otherwise, setting
+ * errno values as specified above.
  */
-void lcd_register_btn0_cb(lcd_btn_cb_fn_t cb);
+bool lcd_register_btn0_cb(lcd_btn_cb_fn_t cb);
 
 /**
  * Registers a callback function for the center button.
@@ -151,10 +176,17 @@ void lcd_register_btn0_cb(lcd_btn_cb_fn_t cb);
  * When the center button on the emulated three-button LCD is pressed, the
  * user-provided callback function will be invoked.
  *
+ * This function uses the following values of errno when an error state is
+ * reached:
+ * ENXIO  - The LCD has not been initialized. Call lcd_initialize() first.
+ *
  * \param cb
- *        A callback function of type lcd_btn_cb_fn_t(void (*cb)(void))
+ *        A callback function of type lcd_btn_cb_fn_t (void (*cb)(void))
+ *
+ * \return True if the operation was successful, or false otherwise, setting
+ * errno values as specified above.
  */
-void lcd_register_btn1_cb(lcd_btn_cb_fn_t cb);
+bool lcd_register_btn1_cb(lcd_btn_cb_fn_t cb);
 
 /**
  * Registers a callback function for the rightmost button.
@@ -162,10 +194,17 @@ void lcd_register_btn1_cb(lcd_btn_cb_fn_t cb);
  * When the rightmost button on the emulated three-button LCD is pressed, the
  * user-provided callback function will be invoked.
  *
+ * This function uses the following values of errno when an error state is
+ * reached:
+ * ENXIO  - The LCD has not been initialized. Call lcd_initialize() first.
+ *
  * \param cb
- *        A callback function of type lcd_btn_cb_fn_t(void (*cb)(void))
+ *        A callback function of type lcd_btn_cb_fn_t (void (*cb)(void))
+ *
+ * \return True if the operation was successful, or false otherwise, setting
+ * errno values as specified above.
  */
-void lcd_register_btn2_cb(lcd_btn_cb_fn_t cb);
+bool lcd_register_btn2_cb(lcd_btn_cb_fn_t cb);
 
 /**
  * Gets the button status from the emulated three-button LCD.
@@ -188,5 +227,4 @@ uint8_t lcd_read_buttons(void);
 }
 }
 #endif
-
 #endif  // _PROS_LLEMU_H_
