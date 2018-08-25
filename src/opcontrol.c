@@ -1,4 +1,6 @@
 #include "main.h"
+#include <stdio.h>
+#include <inttypes.h>
 
 #define HIGHFLAGPOWER 127
 #define HIGHFLAGRPM 106
@@ -11,11 +13,12 @@
 #define MAXALLOWEDTEMP 45
 
 #define NUM_VISION_OBJECTS 2
-#define REDFLAGSIG 1
+#define REDFLAGSIG 2
 
 int intakeDirection = 0;
 int currentFlywheelPower = 0;
 int currentFlywheelGoalRPM = 0;
+int middleFlagXCoord = 0;
 
 bool knownRPM = false;
 
@@ -30,17 +33,22 @@ bool knownRPM = false;
      _a < _b ? _a : _b; })
 
 void drive(void* param){
+    
     while (true) {
-        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X)){
-            adi_motor_set(PORT_DRIVELEFTFRONT, 90);
-            adi_motor_set(PORT_DRIVERIGHTFRONT, -90);
-
+        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
+            adi_motor_set(PORT_DRIVELEFTFRONT, -20);
+            adi_motor_set(PORT_DRIVERIGHTFRONT, 20);
             vision_object_s_t object_arr[NUM_VISION_OBJECTS];
-            vision_read_by_sig(PORT_VISION, 0, REDFLAGSIG, NUM_VISION_OBJECTS, object_arr);
+            vision_read_by_sig(PORT_VISION, 0, 1, NUM_VISION_OBJECTS, object_arr);
             vision_object_s_t middle_flag = object_arr[0];
-            while (middle_flag.x_middle_coord < VISION_FOV_WIDTH/2){
-                vision_read_by_sig(PORT_VISION, 0, REDFLAGSIG, NUM_VISION_OBJECTS, object_arr);
+            while (middle_flag.x_middle_coord > VISION_FOV_WIDTH/2){
+                printf("%d\n", (int) middle_flag.x_middle_coord);
+                printf("%f\n", sizeof(object_arr)/sizeof(object_arr[0]));
+                middleFlagXCoord = (int) middle_flag.x_middle_coord;
+                vision_object_s_t object_arr[NUM_VISION_OBJECTS];
+                vision_read_by_sig(PORT_VISION, 0, 1, NUM_VISION_OBJECTS, object_arr);
                 middle_flag = object_arr[0];
+                delay(200);
             }
         }
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
@@ -198,14 +206,18 @@ void displayInfo(void* param){
         char tempString2[100];
         char tempString3[100];
         char tempString4[100];
+        char tempString5[100];
         sprintf(tempString1, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
         sprintf(tempString2, "Current Velocity: %f", motor_get_actual_velocity(PORT_FLYWHEEL));
         sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
         sprintf(tempString4, "Goal Power: %d", currentFlywheelPower);
+        sprintf(tempString5, "Middle Coord: %d", middleFlagXCoord);
+        
         lcd_set_text(1, tempString1);
         lcd_set_text(2, tempString2);
         lcd_set_text(3, tempString3);
         lcd_set_text(4, tempString4);
+        lcd_set_text(5, tempString5);
         delay(100);
     }
 }
@@ -230,9 +242,20 @@ void capLift(void* param){
 }
 
 void opcontrol() {
+    /*while (true) {
+        vision_object_s_t rtn = vision_get_by_sig(PORT_VISION, 0, 2);
+        // Gets the largest object of the EXAMPLE_SIG signature
+        //printf("sig: %d", rtn.signature);
+        //printf("count: %d", vision_get_object_count(PORT_VISION));
+        printf("position: %d\n", rtn.x_middle_coord);
+        // Prints "sig: 1"
+        delay(2);
+    }*/
+    
     task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
     task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
     task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
     task_t displayInfoTask = task_create(displayInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Task");
     task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
+    
 }
