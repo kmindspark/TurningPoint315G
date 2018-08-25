@@ -108,13 +108,23 @@ void flywheel(void* param){
             motor_move(PORT_INTAKE, 127);
             //rapid fire
             while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0  > currentFlywheelGoalRPM - 4){
-            
+                if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
+                        controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
+                        controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
+                        controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y)){
+                            break;
+                }
             }
             motor_move(PORT_FLYWHEEL, -15);
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
             while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 15){
-
+                if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
+                        controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
+                        controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
+                        controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y)){
+                            break;
+                }
             }
 
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
@@ -200,9 +210,29 @@ void displayInfo(void* param){
     }
 }
 
+void capLift(void* param){
+    while (true){
+        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1)){
+            motor_move(PORT_CAPLIFT, 127);
+            while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1)){
+
+            }
+            motor_move(PORT_CAPLIFT, 20);
+        }
+        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2)){
+            motor_move(PORT_CAPLIFT, -127);
+            while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2)){
+
+            }
+            motor_move(PORT_CAPLIFT, 0);
+        }
+    }
+}
+
 void opcontrol() {
     task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
     task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
     task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
     task_t displayInfoTask = task_create(displayInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Task");
+    task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
 }
