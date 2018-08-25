@@ -5,7 +5,7 @@
         "target": "v5",
         "templates": {
             "kernel": {
-                "location": "/Users/kaushikshivakumar/Library/Application Support/PROS/templates/kernel@3.0.8",
+                "location": "C:\\Users\\Paradigm\\AppData\\Roaming\\PROS\\templates\\kernel@3.0.8",
                 "metadata": {
                     "origin": "pros-mainline",
                     "output": "bin/output.bin"
