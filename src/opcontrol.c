@@ -15,6 +15,7 @@
 
 #define NUM_VISION_OBJECTS 2
 #define REDFLAGSIG 2
+#define MIDDLEFLAGPIXELHEIGHT 20
 
 int intakeDirection = 0;
 int currentFlywheelPower = 0;
@@ -34,25 +35,73 @@ bool knownRPM = false;
      _a < _b ? _a : _b; })
 
 void turnToFlag(){
-    adi_motor_set(PORT_DRIVELEFTFRONT, -40);
-    adi_motor_set(PORT_DRIVERIGHTFRONT, 40);
-    vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, 2);
-    printf("%d\n", sizeFlag.x_middle_coord);
-    printf("%d\n", sizeFlag.x_middle_coord);
-    while (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
-        printf("%d\n", (int) sizeFlag.x_middle_coord);
-        sizeFlag = vision_get_by_sig(PORT_VISION, 0, 2);
-        delay(20);
+    vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+    
+    if (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
+        adi_motor_set(PORT_DRIVELEFTFRONT, -40);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, 40);
+        while (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
+            printf("%d\n", (int) sizeFlag.x_middle_coord);
+            sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+            delay(20);
+        }
+        adi_motor_set(PORT_DRIVELEFTFRONT, 20);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, -20);
     }
-    adi_motor_set(PORT_DRIVELEFTFRONT, 20);
-    adi_motor_set(PORT_DRIVERIGHTFRONT, -20);
-    delay(100);
+    else {
+        adi_motor_set(PORT_DRIVELEFTFRONT, 40);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, -40);
+        while (sizeFlag.x_middle_coord < VISION_FOV_WIDTH/2){
+            printf("%d\n", (int) sizeFlag.x_middle_coord);
+            sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+            delay(20);
+        }
+        adi_motor_set(PORT_DRIVELEFTFRONT, -20);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, 20);
+    }
+
+    wait1Msec(100);
+    adi_motor_set(PORT_DRIVELEFTFRONT, 0);
+    adi_motor_set(PORT_DRIVERIGHTFRONT, 0);
+}
+
+void moveDistToFlag(){
+    vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+    
+    if (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT){
+        adi_motor_set(PORT_DRIVELEFTFRONT, 40);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, 40);
+        while (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT){
+            printf("%d\n", (int) sizeFlag.height);
+            sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+            delay(20);
+        }
+        adi_motor_set(PORT_DRIVELEFTFRONT, -20);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, -20);
+        
+    }
+    else {
+        adi_motor_set(PORT_DRIVELEFTFRONT, -40);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, -40);
+        while (sizeFlag.height > MIDDLEFLAGPIXELHEIGHT){
+            printf("%d\n", (int) sizeFlag.height);
+            sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+            delay(20);
+        }
+        adi_motor_set(PORT_DRIVELEFTFRONT, 20);
+        adi_motor_set(PORT_DRIVERIGHTFRONT, 20);
+    }
+
+    wait1Msec(100);
+    adi_motor_set(PORT_DRIVELEFTFRONT, 0);
+    adi_motor_set(PORT_DRIVERIGHTFRONT, 0);
 }
 
 void drive(void* param){
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
             turnToFlag();
+            moveDistToFlag();
         }
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
         int turn = -1*controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
