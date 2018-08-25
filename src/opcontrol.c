@@ -73,7 +73,7 @@ void drive(void* param){
 }
 
 void flywheel(void* param){
-    lcd_initialize();
+    
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X)){
             currentFlywheelPower = HIGHFLAGPOWER;
@@ -197,14 +197,27 @@ void intake(void* param){
     }
 }
 
+void capLift(void* param){
+    while (true){
+        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1)){
+            motor_move(PORT_CAPLIFT, 127);
+            while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1)){
+
+            }
+            motor_move(PORT_CAPLIFT, 20);
+        }
+        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2)){
+            motor_move(PORT_CAPLIFT, -127);
+            while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2)){
+
+            }
+            motor_move(PORT_CAPLIFT, 0);
+        }
+    }
+}
+
 void displayInfo(void* param){
-    /*while (true) {
-        lv_obj_t * info = lv_label_create(lv_scr_act(), NULL);
-        char tempString[100];
-        sprintf(tempString, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
-        lv_label_set_text(info, "TEMP");
-        delay(500);
-    }*/
+    lcd_initialize();
     while (true){
         char tempString1[100];
         char tempString2[100];
@@ -226,24 +239,16 @@ void displayInfo(void* param){
     }
 }
 
-void capLift(void* param){
-    while (true){
-        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1)){
-            motor_move(PORT_CAPLIFT, 127);
-            while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1)){
-
-            }
-            motor_move(PORT_CAPLIFT, 20);
-        }
-        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2)){
-            motor_move(PORT_CAPLIFT, -127);
-            while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2)){
-
-            }
-            motor_move(PORT_CAPLIFT, 0);
-        }
+void lvglInfo(void* param){
+    while (true) {
+        lv_obj_t* info = lv_label_create(lv_scr_act(), NULL);
+        char tempString[100];
+        sprintf(tempString, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
+        lv_label_set_text(info, "TEMP");
+        delay(500);
     }
 }
+
 
 void opcontrol() {
     /*while (true) {
@@ -259,7 +264,7 @@ void opcontrol() {
     task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
     task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
     task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
-    task_t displayInfoTask = task_create(displayInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Task");
+    task_t displayInfoTask = task_create(lvglInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Task");
     task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
     
 }
