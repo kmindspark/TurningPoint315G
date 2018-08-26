@@ -15,7 +15,8 @@
 
 #define NUM_VISION_OBJECTS 2
 #define REDFLAGSIG 2
-#define MIDDLEFLAGPIXELHEIGHT 20
+#define BLUEFLAGSIG 3
+#define MIDDLEFLAGPIXELHEIGHT 46
 
 int intakeDirection = 0;
 int currentFlywheelPower = 0;
@@ -60,7 +61,7 @@ void turnToFlag(){
         adi_motor_set(PORT_DRIVERIGHTFRONT, 20);
     }
 
-    wait1Msec(100);
+    delay(100);
     adi_motor_set(PORT_DRIVELEFTFRONT, 0);
     adi_motor_set(PORT_DRIVERIGHTFRONT, 0);
 }
@@ -92,7 +93,7 @@ void moveDistToFlag(){
         adi_motor_set(PORT_DRIVERIGHTFRONT, 20);
     }
 
-    wait1Msec(100);
+    delay(100);
     adi_motor_set(PORT_DRIVELEFTFRONT, 0);
     adi_motor_set(PORT_DRIVERIGHTFRONT, 0);
 }
@@ -263,8 +264,8 @@ void capLift(void* param){
             }
             motor_move(PORT_CAPLIFT, 0);
         }
+        delay(20);
     }
-    delay(20);
 }
 
 void displayInfo(void* param){
@@ -300,9 +301,9 @@ void lvglInfo(){ //
 
 void opcontrol() {
     task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
-    //task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
-    //task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
-    //task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
+    task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
+    task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
+    task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
     
     lvglInfo();
 }
