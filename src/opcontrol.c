@@ -24,6 +24,7 @@ int currentFlywheelGoalRPM = 0;
 int middleFlagXCoord = 0;
 
 bool knownRPM = false;
+bool redAlliance = false;
 
  #define max(a,b) \
    ({ __typeof__ (a) _a = (a); \
@@ -35,15 +36,15 @@ bool knownRPM = false;
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
 
-void turnToFlag(){
-    vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+void turnToFlag(int sigNum){
+    vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
     
     if (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
         adi_motor_set(PORT_DRIVELEFTFRONT, -40);
         adi_motor_set(PORT_DRIVERIGHTFRONT, 40);
         while (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
             printf("%d\n", (int) sizeFlag.x_middle_coord);
-            sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+            sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
         adi_motor_set(PORT_DRIVELEFTFRONT, 20);
@@ -54,7 +55,7 @@ void turnToFlag(){
         adi_motor_set(PORT_DRIVERIGHTFRONT, -40);
         while (sizeFlag.x_middle_coord < VISION_FOV_WIDTH/2){
             printf("%d\n", (int) sizeFlag.x_middle_coord);
-            sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+            sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
         adi_motor_set(PORT_DRIVELEFTFRONT, -20);
@@ -66,15 +67,15 @@ void turnToFlag(){
     adi_motor_set(PORT_DRIVERIGHTFRONT, 0);
 }
 
-void moveDistToFlag(){
-    vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+void moveDistToFlag(int sigNum){
+    vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
     
     if (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT){
         adi_motor_set(PORT_DRIVELEFTFRONT, 40);
         adi_motor_set(PORT_DRIVERIGHTFRONT, 40);
         while (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT){
             printf("%d\n", (int) sizeFlag.height);
-            sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+            sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
         adi_motor_set(PORT_DRIVELEFTFRONT, -20);
@@ -86,7 +87,7 @@ void moveDistToFlag(){
         adi_motor_set(PORT_DRIVERIGHTFRONT, -40);
         while (sizeFlag.height > MIDDLEFLAGPIXELHEIGHT){
             printf("%d\n", (int) sizeFlag.height);
-            sizeFlag = vision_get_by_sig(PORT_VISION, 0, REDFLAGSIG);
+            sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
         adi_motor_set(PORT_DRIVELEFTFRONT, 20);
@@ -101,8 +102,12 @@ void moveDistToFlag(){
 void drive(void* param){
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
-            turnToFlag();
-            moveDistToFlag();
+            int sigNum = BLUEFLAGSIG;
+            if (!redAlliance){
+                sigNum = REDFLAGSIG;
+            }
+            turnToFlag(sigNum);
+            moveDistToFlag(sigNum);
         }
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
         int turn = -1*controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
@@ -292,10 +297,32 @@ void displayInfo(void* param){
     }
 }
 
+void redTeam(){
+    redAlliance = true;
+}
+
+void blueTeam(){
+    redAlliance = false;
+}
+
 void lvglInfo(){ //
     lv_obj_t * title = lv_label_create(lv_scr_act(), NULL);
-    lv_label_set_text(title, "Title Label");
+    lv_label_set_text(title, "The code is running.");
     lv_obj_align(title, NULL, LV_ALIGN_IN_TOP_MID, 0, 20);
+
+    lv_obj_t * redBtn = lv_btn_create(lv_scr_act(), NULL);
+    lv_btn_set_action(redBtn, LV_BTN_ACTION_CLICK, redTeam);
+    lv_cont_set_fit(redBtn, true, true);
+    lv_obj_align(redBtn, title, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+    lv_obj_t * redLabel = lv_label_create(redBtn, NULL);
+    lv_label_set_text(redLabel, "Red");
+
+    lv_obj_t * blueBtn = lv_btn_create(lv_scr_act(), NULL);
+    lv_btn_set_action(blueBtn, LV_BTN_ACTION_CLICK, blueTeam);
+    lv_cont_set_fit(blueBtn, true, true);
+    lv_obj_align(blueBtn, title, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+    lv_obj_t * blueLabel = lv_label_create(blueBtn, NULL);
+    lv_label_set_text(blueLabel, "Blue");
 }
 
 
