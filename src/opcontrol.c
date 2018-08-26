@@ -297,12 +297,14 @@ void displayInfo(void* param){
     }
 }
 
-void redTeam(){
+static lv_res_t redTeam(lv_obj_t * btn){
     redAlliance = true;
+    return LV_RES_OK;
 }
 
-void blueTeam(){
+static lv_res_t blueTeam(lv_obj_t * btn){
     redAlliance = false;
+    return LV_RES_OK;
 }
 
 void lvglInfo(){ //
@@ -320,7 +322,7 @@ void lvglInfo(){ //
     lv_obj_t * blueBtn = lv_btn_create(lv_scr_act(), NULL);
     lv_btn_set_action(blueBtn, LV_BTN_ACTION_CLICK, blueTeam);
     lv_cont_set_fit(blueBtn, true, true);
-    lv_obj_align(blueBtn, title, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+    lv_obj_align(blueBtn, redBtn, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 10);
     lv_obj_t * blueLabel = lv_label_create(blueBtn, NULL);
     lv_label_set_text(blueLabel, "Blue");
 }
