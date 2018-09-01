@@ -111,14 +111,12 @@ void drive(void* param){
         }
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
         int turn = -1*controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
-        /*motor_move(PORT_DRIVELEFTFRONT, forward + turn);
-        motor_move(PORT_DRIVERIGHTFRONT, forward - turn);
-        motor_move(PORT_DRIVELEFTBACK, forward + turn);
-        motor_move(PORT_DRIVERIGHTBACK, forward - turn);*/
-        adi_motor_set(PORT_DRIVELEFTFRONT, max(-127, min(127, forward + turn)));
-        adi_motor_set(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
-        adi_motor_set(PORT_DRIVELEFTBACK, forward + turn);
-        adi_motor_set(PORT_DRIVERIGHTBACK, forward - turn);
+        
+        motor_move(PORT_DRIVELEFTFRONT, max(-127, min(127, forward + turn)));
+        motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
+        motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward + turn)));
+        motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward - turn)));
+        motor_move(PORT_DRIVECENTER, forward);
 
         delay(20);
     }
@@ -283,7 +281,7 @@ void displayInfo(void* param){
         char tempString5[100];
 
         sprintf(tempString1, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
-        sprintf(tempString2, "Current Velocity: %f", motor_get_actual_velocity(PORT_FLYWHEEL));
+        sprintf(tempString2, "Current Flywheel RPM: %f", motor_get_actual_velocity(PORT_FLYWHEEL));
         sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
         sprintf(tempString4, "Goal Power: %d", currentFlywheelPower);
         sprintf(tempString5, "Middle Coord: %d", middleFlagXCoord);
@@ -293,7 +291,9 @@ void displayInfo(void* param){
         lcd_set_text(3, tempString3);
         lcd_set_text(4, tempString4);
         lcd_set_text(5, tempString5);
-        delay(100);
+        delay(20);
+
+        controller_print(CONTROLLER_MASTER, 0, 0, "RPM: %.2f", motor_get_actual_velocity(PORT_FLYWHEEL));
     }
 }
 
@@ -315,14 +315,14 @@ void lvglInfo(){ //
     lv_obj_t * redBtn = lv_btn_create(lv_scr_act(), NULL);
     lv_btn_set_action(redBtn, LV_BTN_ACTION_CLICK, redTeam);
     lv_cont_set_fit(redBtn, true, true);
-    lv_obj_align(redBtn, title, LV_ALIGN_OUT_BOTTOM_CENTER, 0, 10);
+    lv_obj_align(redBtn, title, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
     lv_obj_t * redLabel = lv_label_create(redBtn, NULL);
     lv_label_set_text(redLabel, "Red");
 
     lv_obj_t * blueBtn = lv_btn_create(lv_scr_act(), NULL);
     lv_btn_set_action(blueBtn, LV_BTN_ACTION_CLICK, blueTeam);
     lv_cont_set_fit(blueBtn, true, true);
-    lv_obj_align(blueBtn, redBtn, LV_ALIGN_OUT_BOTTOM_CENTER, 0, 10);
+    lv_obj_align(blueBtn, redBtn, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
     lv_obj_t * blueLabel = lv_label_create(blueBtn, NULL);
     lv_label_set_text(blueLabel, "Blue");
 }
@@ -333,6 +333,7 @@ void opcontrol() {
     task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
     task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
     task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
+    task_t displayInfoTask = task_create(displayInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Info Task");
     
     lvglInfo();
 }

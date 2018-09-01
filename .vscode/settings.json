@@ -14,6 +14,7 @@
         "system_error": "cpp",
         "tuple": "cpp",
         "vector": "cpp",
-        "config.h": "c"
+        "config.h": "c",
+        "valarray": "c"
     }
 }
