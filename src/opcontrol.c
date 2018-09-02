@@ -118,10 +118,10 @@ void drive(void* param){
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
         int turn = -1*controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
         
-        motor_move(PORT_DRIVELEFTFRONT, max(-127, min(127, forward + turn)));
-        motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
-        motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward + turn)));
-        motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward - turn)));
+        motor_move(PORT_DRIVELEFTFRONT, max(-127, min(127, forward - turn)));
+        motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward + turn)));
+        motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward - turn)));
+        motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward + turn)));
         motor_move(PORT_DRIVECENTER, max(-127, min(127, forward)));
 
         delay(20);
@@ -302,8 +302,8 @@ void displayInfo(void* param){
         lcd_set_text(5, tempString5);
         lcd_set_text(6, tempString6);
 
-        controller_print(CONTROLLER_MASTER, 0, 0, "RPM: %.2f", motor_get_actual_velocity(PORT_FLYWHEEL));
-        controller_print(CONTROLLER_MASTER, 1, 0, "Volts: %.2f", battery_get_voltage());
+        //controller_print(CONTROLLER_MASTER, 0, 0, "RPM: %.2f", motor_get_actual_velocity(PORT_FLYWHEEL));
+        //controller_print(CONTROLLER_MASTER, 1, 0, "Volts: %.2f", battery_get_voltage());
 
         delay(20);
     }
