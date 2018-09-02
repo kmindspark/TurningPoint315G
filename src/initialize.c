@@ -13,19 +13,21 @@ void on_center_button() {
 }*/
 
 void initializeDriveMotors(){
-    /*motor_set_gearing(PORT_DRIVELEFTFRONT, E_MOTOR_GEARSET_18);
+    motor_set_gearing(PORT_DRIVELEFTFRONT, E_MOTOR_GEARSET_18);
     motor_set_gearing(PORT_DRIVERIGHTFRONT, E_MOTOR_GEARSET_18);
     motor_set_gearing(PORT_DRIVELEFTBACK, E_MOTOR_GEARSET_18);
     motor_set_gearing(PORT_DRIVERIGHTBACK, E_MOTOR_GEARSET_18);
+    motor_set_gearing(PORT_DRIVECENTER, E_MOTOR_GEARSET_18);
     motor_set_reversed(PORT_DRIVELEFTFRONT, false);
     motor_set_reversed(PORT_DRIVERIGHTFRONT, true);
     motor_set_reversed(PORT_DRIVELEFTBACK, false);
-    motor_set_reversed(PORT_DRIVERIGHTBACK, true);*/
+    motor_set_reversed(PORT_DRIVERIGHTBACK, true);
+    motor_set_reversed(PORT_DRIVECENTER, false);
 
-    adi_port_set_config(PORT_DRIVELEFTBACK, E_ADI_LEGACY_PWM);
+    /*adi_port_set_config(PORT_DRIVELEFTBACK, E_ADI_LEGACY_PWM);
     adi_port_set_config(PORT_DRIVELEFTFRONT, E_ADI_LEGACY_PWM);
     adi_port_set_config(PORT_DRIVERIGHTBACK, E_ADI_LEGACY_PWM);
-    adi_port_set_config(PORT_DRIVERIGHTFRONT, E_ADI_LEGACY_PWM);
+    adi_port_set_config(PORT_DRIVERIGHTFRONT, E_ADI_LEGACY_PWM);*/
 }
 
 void initializeFlywheelMotor(){

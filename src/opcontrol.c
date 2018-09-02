@@ -5,10 +5,13 @@
 
 #define HIGHFLAGPOWER 127
 #define HIGHFLAGRPM 106
+#define HIGHFLAGCURRENTLIMIT 0.5
 #define MIDDLEFLAGPOWER 82
 #define MIDDLEFLAGRPM 66
+#define MIDDLEFLAGCURRENTLIMIT 0.4
 #define BETWEENFLAGPOWER 115
 #define BETWEEENFLAGRPM 90
+#define BETWEENFLAGCURRENTLIMIT 0.3
 
 #define OVERRIDETEMP true
 #define MAXALLOWEDTEMP 45
@@ -17,6 +20,9 @@
 #define REDFLAGSIG 2
 #define BLUEFLAGSIG 3
 #define MIDDLEFLAGPIXELHEIGHT 46
+
+#define KPFLYWHEEL 0.5
+#define KIFLYWHEEL 0.05
 
 int intakeDirection = 0;
 int currentFlywheelPower = 0;
@@ -116,7 +122,7 @@ void drive(void* param){
         motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
         motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward + turn)));
         motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward - turn)));
-        motor_move(PORT_DRIVECENTER, forward);
+        motor_move(PORT_DRIVECENTER, max(-127, min(127, forward)));
 
         delay(20);
     }
@@ -125,7 +131,6 @@ void drive(void* param){
 }
 
 void flywheel(void* param){
-    
     while (true) {
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X)){
             currentFlywheelPower = HIGHFLAGPOWER;
@@ -179,9 +184,11 @@ void flywheel(void* param){
                             break;
                 }
             }
-            motor_move(PORT_FLYWHEEL, -15);
+
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
+            knownRPM = true;
+            /*
             while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 15){
                 if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
@@ -189,7 +196,7 @@ void flywheel(void* param){
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y)){
                             break;
                 }
-            }
+            }*/
 
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
         }
@@ -279,21 +286,26 @@ void displayInfo(void* param){
         char tempString3[100];
         char tempString4[100];
         char tempString5[100];
+        char tempString6[100];
 
-        sprintf(tempString1, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
+        sprintf(tempString1, "Flywheel Current: %f", motor_get_current_draw(PORT_FLYWHEEL));
         sprintf(tempString2, "Current Flywheel RPM: %f", motor_get_actual_velocity(PORT_FLYWHEEL));
         sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
         sprintf(tempString4, "Goal Power: %d", currentFlywheelPower);
         sprintf(tempString5, "Middle Coord: %d", middleFlagXCoord);
+        sprintf(tempString6, "Battery Voltage: %d", battery_get_voltage());
         
         lcd_set_text(1, tempString1);
         lcd_set_text(2, tempString2);
         lcd_set_text(3, tempString3);
         lcd_set_text(4, tempString4);
         lcd_set_text(5, tempString5);
-        delay(20);
+        lcd_set_text(6, tempString6);
 
         controller_print(CONTROLLER_MASTER, 0, 0, "RPM: %.2f", motor_get_actual_velocity(PORT_FLYWHEEL));
+        controller_print(CONTROLLER_MASTER, 1, 0, "Volts: %.2f", battery_get_voltage());
+
+        delay(20);
     }
 }
 
