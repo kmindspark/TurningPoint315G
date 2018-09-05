@@ -4,12 +4,12 @@
 #include <inttypes.h>
 
 #define HIGHFLAGPOWER 127
-#define HIGHFLAGRPM 106
+#define HIGHFLAGRPM 108
 #define HIGHFLAGCURRENTLIMIT 0.5
 #define MIDDLEFLAGPOWER 82
-#define MIDDLEFLAGRPM 66
+#define MIDDLEFLAGRPM 70
 #define MIDDLEFLAGCURRENTLIMIT 0.4
-#define BETWEENFLAGPOWER 115
+#define BETWEENFLAGPOWER 100
 #define BETWEEENFLAGRPM 90
 #define BETWEENFLAGCURRENTLIMIT 0.3
 
@@ -42,67 +42,76 @@ bool redAlliance = false;
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
 
+void assignDriveMotors(int leftSide, int rightSide){
+    motor_move(PORT_DRIVELEFTFRONT, leftSide);
+    motor_move(PORT_DRIVELEFTBACK, leftSide);
+    motor_move(PORT_DRIVERIGHTFRONT, rightSide);
+    motor_move(PORT_DRIVERIGHTBACK, rightSide);
+    motor_move(PORT_DRIVECENTER, (leftSide + rightSide)/2.0);
+}
+
 void turnToFlag(int sigNum){
     vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
     
     if (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
-        adi_motor_set(PORT_DRIVELEFTFRONT, -40);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, 40);
+        assignDriveMotors(40, -40);
         while (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
+            if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
+                return;
+            }
             printf("%d\n", (int) sizeFlag.x_middle_coord);
             sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
-        adi_motor_set(PORT_DRIVELEFTFRONT, 20);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, -20);
+        assignDriveMotors(-20, 20);
     }
     else {
-        adi_motor_set(PORT_DRIVELEFTFRONT, 40);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, -40);
+        assignDriveMotors(-40, 40);
         while (sizeFlag.x_middle_coord < VISION_FOV_WIDTH/2){
+            if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
+                return;
+            }
             printf("%d\n", (int) sizeFlag.x_middle_coord);
             sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
-        adi_motor_set(PORT_DRIVELEFTFRONT, -20);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, 20);
+        assignDriveMotors(20, -20);
     }
 
     delay(100);
-    adi_motor_set(PORT_DRIVELEFTFRONT, 0);
-    adi_motor_set(PORT_DRIVERIGHTFRONT, 0);
+    assignDriveMotors(0, 0);
 }
 
 void moveDistToFlag(int sigNum){
     vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
     
     if (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT){
-        adi_motor_set(PORT_DRIVELEFTFRONT, 40);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, 40);
+        assignDriveMotors(40, 40);
         while (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT){
+            if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
+                return;
+            }
             printf("%d\n", (int) sizeFlag.height);
             sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
-        adi_motor_set(PORT_DRIVELEFTFRONT, -20);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, -20);
-        
+        assignDriveMotors(-20, -20);
     }
     else {
-        adi_motor_set(PORT_DRIVELEFTFRONT, -40);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, -40);
+        assignDriveMotors(40, 40);
         while (sizeFlag.height > MIDDLEFLAGPIXELHEIGHT){
+            if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
+                return;
+            }
             printf("%d\n", (int) sizeFlag.height);
             sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
-        adi_motor_set(PORT_DRIVELEFTFRONT, 20);
-        adi_motor_set(PORT_DRIVERIGHTFRONT, 20);
+        assignDriveMotors(20, 20);
     }
 
     delay(100);
-    adi_motor_set(PORT_DRIVELEFTFRONT, 0);
-    adi_motor_set(PORT_DRIVERIGHTFRONT, 0);
+    assignDriveMotors(0, 0);
 }
 
 void drive(void* param){
@@ -115,13 +124,14 @@ void drive(void* param){
             turnToFlag(sigNum);
             moveDistToFlag(sigNum);
         }
+
         int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
-        int turn = -1*controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
+        int turn = controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
         
-        motor_move(PORT_DRIVELEFTFRONT, max(-127, min(127, forward - turn)));
-        motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward + turn)));
-        motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward - turn)));
-        motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward + turn)));
+        motor_move(PORT_DRIVELEFTFRONT, max(-127, min(127, forward + turn)));
+        motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
+        motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward + turn)));
+        motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward - turn)));
         motor_move(PORT_DRIVECENTER, max(-127, min(127, forward)));
 
         delay(20);
@@ -184,19 +194,19 @@ void flywheel(void* param){
                             break;
                 }
             }
-
+            motor_move(PORT_FLYWHEEL, -15);
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
-            knownRPM = true;
-            /*
-            while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 15){
+            middleFlagXCoord = 1000; //debugging purposes
+            while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 15){ //change this value possibly
                 if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y)){
                             break;
                 }
-            }*/
+            }
+            middleFlagXCoord = 2000;
 
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
         }
@@ -210,6 +220,7 @@ void flywheel(void* param){
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y)){
                             break;
                     }
+                    delay(20);
                 }
                 motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             }
@@ -222,6 +233,7 @@ void flywheel(void* param){
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y)){
                             break;
                     }
+                    delay(20);
                 }
                 motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             }
@@ -288,8 +300,8 @@ void displayInfo(void* param){
         char tempString5[100];
         char tempString6[100];
 
-        sprintf(tempString1, "Flywheel Current: %f", motor_get_current_draw(PORT_FLYWHEEL));
-        sprintf(tempString2, "Current Flywheel RPM: %f", motor_get_actual_velocity(PORT_FLYWHEEL));
+        sprintf(tempString1, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
+        sprintf(tempString2, "Current Flywheel RPM: %f", -1*motor_get_actual_velocity(PORT_FLYWHEEL));
         sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
         sprintf(tempString4, "Goal Power: %d", currentFlywheelPower);
         sprintf(tempString5, "Middle Coord: %d", middleFlagXCoord);
