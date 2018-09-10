@@ -17,6 +17,7 @@
         "config.h": "c",
         "valarray": "c",
         "bitset": "c",
-        "locale": "c"
+        "locale": "c",
+        "utils.h": "c"
     }
 }

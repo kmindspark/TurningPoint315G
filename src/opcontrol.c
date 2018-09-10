@@ -1,13 +1,11 @@
 #include "main.h"
 #include "config.h"
-#include <stdio.h>
-#include <inttypes.h>
 
-#define HIGHFLAGPOWER 127
-#define HIGHFLAGRPM 108
+#define HIGHFLAGPOWER 120
+#define HIGHFLAGRPM 104
 #define HIGHFLAGCURRENTLIMIT 0.5
-#define MIDDLEFLAGPOWER 82
-#define MIDDLEFLAGRPM 70
+#define MIDDLEFLAGPOWER 78
+#define MIDDLEFLAGRPM 66
 #define MIDDLEFLAGCURRENTLIMIT 0.4
 #define BETWEENFLAGPOWER 100
 #define BETWEEENFLAGRPM 90
@@ -30,7 +28,8 @@ int currentFlywheelGoalRPM = 0;
 int middleFlagXCoord = 0;
 
 bool knownRPM = false;
-bool redAlliance = false;
+
+extern bool redAlliance;
 
  #define max(a,b) \
    ({ __typeof__ (a) _a = (a); \
@@ -42,7 +41,8 @@ bool redAlliance = false;
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
 
-void assignDriveMotors(int leftSide, int rightSide){
+
+void assignDriveMotorsDControl(int leftSide, int rightSide){
     motor_move(PORT_DRIVELEFTFRONT, leftSide);
     motor_move(PORT_DRIVELEFTBACK, leftSide);
     motor_move(PORT_DRIVERIGHTFRONT, rightSide);
@@ -54,7 +54,7 @@ void turnToFlag(int sigNum){
     vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
     
     if (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
-        assignDriveMotors(40, -40);
+        assignDriveMotorsDControl(40, -40);
         while (sizeFlag.x_middle_coord > VISION_FOV_WIDTH/2){
             if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
                 return;
@@ -63,10 +63,10 @@ void turnToFlag(int sigNum){
             sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
-        assignDriveMotors(-20, 20);
+        assignDriveMotorsDControl(-20, 20);
     }
     else {
-        assignDriveMotors(-40, 40);
+        assignDriveMotorsDControl(-40, 40);
         while (sizeFlag.x_middle_coord < VISION_FOV_WIDTH/2){
             if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
                 return;
@@ -75,18 +75,18 @@ void turnToFlag(int sigNum){
             sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
-        assignDriveMotors(20, -20);
+        assignDriveMotorsDControl(20, -20);
     }
 
     delay(100);
-    assignDriveMotors(0, 0);
+    assignDriveMotorsDControl(0, 0);
 }
 
 void moveDistToFlag(int sigNum){
     vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
     
     if (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT){
-        assignDriveMotors(40, 40);
+        assignDriveMotorsDControl(40, 40);
         while (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT){
             if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
                 return;
@@ -95,10 +95,10 @@ void moveDistToFlag(int sigNum){
             sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
-        assignDriveMotors(-20, -20);
+        assignDriveMotorsDControl(-20, -20);
     }
     else {
-        assignDriveMotors(40, 40);
+        assignDriveMotorsDControl(40, 40);
         while (sizeFlag.height > MIDDLEFLAGPIXELHEIGHT){
             if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT)){
                 return;
@@ -107,11 +107,11 @@ void moveDistToFlag(int sigNum){
             sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
             delay(20);
         }
-        assignDriveMotors(20, 20);
+        assignDriveMotorsDControl(20, 20);
     }
 
     delay(100);
-    assignDriveMotors(0, 0);
+    assignDriveMotorsDControl(0, 0);
 }
 
 void drive(void* param){
@@ -141,8 +141,10 @@ void drive(void* param){
 }
 
 void flywheel(void* param){
+   bool firstIter = true;
     while (true) {
-        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X)){
+        if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) || firstIter){
+            firstIter = false;
             currentFlywheelPower = HIGHFLAGPOWER;
             currentFlywheelGoalRPM = HIGHFLAGRPM;
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
@@ -186,34 +188,38 @@ void flywheel(void* param){
             intakeDirection = 1;
             motor_move(PORT_INTAKE, 127);
             //rapid fire
-            while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0  > currentFlywheelGoalRPM - 4){
+            while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0  > currentFlywheelGoalRPM - 8 ){
                 if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y)){
                             break;
                 }
+                delay(20);
             }
-            motor_move(PORT_FLYWHEEL, -15);
+
+            motor_move(PORT_FLYWHEEL, -25);
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
-            middleFlagXCoord = 1000; //debugging purposes
-            while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 15){ //change this value possibly
+            delay(150);
+
+            /*while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 5){ //change this value possibly
                 if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y)){
                             break;
                 }
+                delay(20);
             }
-            middleFlagXCoord = 2000;
 
+            middleFlagXCoord += motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0;*/
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
         }
         else if (knownRPM) {
             if (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 15){
                 motor_move(PORT_FLYWHEEL, -15);
-                while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 15){
+                while (motor_get_actual_velocity(PORT_FLYWHEEL)*-1.0 > currentFlywheelGoalRPM + 5){
                     if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
                         controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
@@ -253,7 +259,7 @@ void intake(void* param){
                 motor_move(PORT_INTAKE, 0);
                 intakeDirection = 0;
             }
-            delay(300);
+            delay(250);
         }
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2)){
             if (intakeDirection != -1){
@@ -264,13 +270,14 @@ void intake(void* param){
                 motor_move(PORT_INTAKE, 0);
                 intakeDirection = 0;
             }
-            delay(300);
+            delay(250);
         }
         delay(20);
     }
 }
 
 void capLift(void* param){
+    motor_move(PORT_CAPLIFT, -10);
     while (true){
         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1)){
             motor_move(PORT_CAPLIFT, 127);
@@ -284,7 +291,7 @@ void capLift(void* param){
             while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2)){
 
             }
-            motor_move(PORT_CAPLIFT, 0);
+            motor_move(PORT_CAPLIFT, -10);
         }
         delay(20);
     }
@@ -321,17 +328,8 @@ void displayInfo(void* param){
     }
 }
 
-static lv_res_t redTeam(lv_obj_t * btn){
-    redAlliance = true;
-    return LV_RES_OK;
-}
-
-static lv_res_t blueTeam(lv_obj_t * btn){
-    redAlliance = false;
-    return LV_RES_OK;
-}
-
-void lvglInfo(){ //
+/*
+void lvglInfo(){
     lv_obj_t * title = lv_label_create(lv_scr_act(), NULL);
     lv_label_set_text(title, "The code is running.");
     lv_obj_align(title, NULL, LV_ALIGN_IN_TOP_MID, 0, 20);
@@ -350,6 +348,7 @@ void lvglInfo(){ //
     lv_obj_t * blueLabel = lv_label_create(blueBtn, NULL);
     lv_label_set_text(blueLabel, "Blue");
 }
+*/
 
 
 void opcontrol() {
@@ -359,5 +358,5 @@ void opcontrol() {
     task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
     task_t displayInfoTask = task_create(displayInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Info Task");
     
-    lvglInfo();
+    //lvglInfo();
 }
