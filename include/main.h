@@ -37,6 +37,7 @@
 #define PROS_USE_LITERALS
 
 #include "api.h"
+#include "config.h"
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do
@@ -64,4 +65,4 @@
 //#include <iostream>
 #endif
 
-#endif  // _PROS_MAIN_H_
+#endif // _PROS_MAIN_H_
