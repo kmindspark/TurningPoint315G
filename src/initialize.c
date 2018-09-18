@@ -5,7 +5,8 @@ bool redAlliance = false;
 
 #define NUMAUTONS 2
 
-static const char *btnm_map[] = {"S&P F", "S&P B", "Red", "Blue"};
+static const char *btnm_map[] = {"S&P F", "S&P B", ""};
+static const char *alliance_map[] = {"Red", "Blue", ""};
 
 void initializeDriveMotors()
 {
@@ -38,20 +39,24 @@ static lv_res_t btnm_action(lv_obj_t *btnm, const char *txt)
    if (strcmp(txt, "Red") == 0)
    {
       redAlliance = true;
+      lv_btnm_set_toggle(btnm, true, 0);
    }
-   else if (strcmp(txt, "Blue") == 0)
+   else if (strcmp(txt, "Blue") == 1)
    {
       redAlliance = false;
+      lv_btnm_set_toggle(btnm, true, 1);
    }
    else
    {
       for (int i = 0; i < NUMAUTONS; i++)
       {
-         if (strcmp(btnm_map[i], txt) == 0)
+         if (strcmp(btnm_map[i], txt) == 2)
          {
             autonNumber = i + 1;
+            break;
          }
       }
+      lv_btnm_set_toggle(btnm, true, autonNumber);
    }
 
    return LV_RES_OK; /*Return OK because the button matrix is not deleted*/
@@ -67,18 +72,21 @@ void initialize()
 void disabled() {}
 void competition_initialize()
 {
-   /*
-   lv_theme_t *th = lv_theme_alien_init(10, NULL);
+   lv_theme_alien_init(10, NULL);
 
-   /*
    lv_obj_t *title = lv_label_create(lv_scr_act(), NULL);
    lv_label_set_text(title, "Auton Selection");
-   lv_obj_align(title, NULL, LV_ALIGN_IN_TOP_MID, 0, 20);
-   */
+   lv_obj_align(title, NULL, LV_ALIGN_IN_TOP_MID, 0, 10);
 
-   /*
    lv_obj_t *btnm = lv_btnm_create(lv_scr_act(), NULL);
    lv_btnm_set_map(btnm, btnm_map);
    lv_btnm_set_action(btnm, btnm_action);
-   lv_obj_set_size(btnm, LV_HOR_RES, LV_VER_RES);*/
+   lv_obj_set_size(btnm, LV_HOR_RES, LV_VER_RES / 3);
+   lv_obj_align(btnm, title, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
+
+   lv_obj_t *allianceM = lv_btnm_create(lv_scr_act(), NULL);
+   lv_btnm_set_map(allianceM, alliance_map);
+   lv_btnm_set_action(allianceM, btnm_action);
+   lv_obj_set_size(allianceM, LV_HOR_RES, 50);
+   lv_obj_align(allianceM, btnm, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 }

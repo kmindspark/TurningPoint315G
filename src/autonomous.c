@@ -134,15 +134,11 @@ void flagAuton(bool park, bool redAlliance)
 
 void autonomous()
 {
-   motor_move(PORT_FLYWHEEL, 127);
-   delay(10000);
-   motor_move(PORT_FLYWHEEL, 0);
-   /*
    switch (autonNumber)
    {
    case 1:
       flagAuton(false, redAlliance);
    case 2:
       flagAuton(true, redAlliance);
-   }*/
+   }
 }
