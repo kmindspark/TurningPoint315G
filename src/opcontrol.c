@@ -323,7 +323,7 @@ void displayInfo(void *param)
       char tempString5[100];
       char tempString6[100];
 
-      sprintf(tempString1, "Flywheel Temperature: %f", motor_get_temperature(PORT_FLYWHEEL));
+      sprintf(tempString1, "Flywheel Temperature: %d", (int)motor_get_temperature(PORT_FLYWHEEL));
       sprintf(tempString2, "Current Flywheel RPM: %f", -1 * motor_get_actual_velocity(PORT_FLYWHEEL));
       sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
       sprintf(tempString4, "Goal Power: %d", currentFlywheelPower);
@@ -343,28 +343,6 @@ void displayInfo(void *param)
       delay(20);
    }
 }
-
-/*
-void lvglInfo(){
-    lv_obj_t * title = lv_label_create(lv_scr_act(), NULL);
-    lv_label_set_text(title, "The code is running.");
-    lv_obj_align(title, NULL, LV_ALIGN_IN_TOP_MID, 0, 20);
-
-    lv_obj_t * redBtn = lv_btn_create(lv_scr_act(), NULL);
-    lv_btn_set_action(redBtn, LV_BTN_ACTION_CLICK, redTeam);
-    lv_cont_set_fit(redBtn, true, true);
-    lv_obj_align(redBtn, title, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
-    lv_obj_t * redLabel = lv_label_create(redBtn, NULL);
-    lv_label_set_text(redLabel, "Red");
-
-    lv_obj_t * blueBtn = lv_btn_create(lv_scr_act(), NULL);
-    lv_btn_set_action(blueBtn, LV_BTN_ACTION_CLICK, blueTeam);
-    lv_cont_set_fit(blueBtn, true, true);
-    lv_obj_align(blueBtn, redBtn, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
-    lv_obj_t * blueLabel = lv_label_create(blueBtn, NULL);
-    lv_label_set_text(blueLabel, "Blue");
-}
-*/
 
 void opcontrol()
 {

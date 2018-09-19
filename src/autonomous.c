@@ -75,6 +75,7 @@ void backward(int ticks, int power)
 
 void autonFlywheel(void *param)
 {
+   motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
    while (true)
    {
       if (motor_get_actual_velocity(PORT_FLYWHEEL) * -1.0 > autonCurrentFlywheelGoalRPM + 15)
@@ -96,9 +97,7 @@ void autonFlywheel(void *param)
          motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
       }
 
-      motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
-
-      delay(200);
+      delay(20);
    }
 }
 
@@ -117,28 +116,53 @@ void flagAuton(bool park, bool redAlliance)
 {
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
    setFlywheelSpeed(FRONTTILEPOWER, FRONTTILERPM);
-   while (motor_get_actual_velocity(PORT_FLYWHEEL) < FRONTTILERPM - 6)
+
+   forward(3500, 127);
+   backward(3500, 127);
+
+   while (motor_get_actual_velocity(PORT_FLYWHEEL) * -1.0 < FRONTTILERPM)
    {
       delay(20);
    }
+   delay(1000);
    setIntakePower(127);
    delay(1000);
 
-   backward(300, 127);
-   turnLeft(300, 127, redAlliance);
+   backward(2000, 127);
+   turnLeft(850, 127, redAlliance);
 
    assignDriveMotorsPower(127, 127);
-   delay(1500);
+   delay(1750);
    assignDriveMotorsPower(0, 0);
+}
+
+void displayInfoAuton(void *param)
+{
+   lcd_initialize();
+   while (true)
+   {
+      char tempString1[100];
+      char tempString2[100];
+      char tempString3[100];
+
+      sprintf(tempString1, "Flywheel Temperature: %d", (int)motor_get_temperature(PORT_FLYWHEEL));
+      sprintf(tempString2, "Current Flywheel RPM: %f", -1 * motor_get_actual_velocity(PORT_FLYWHEEL));
+      sprintf(tempString3, "Battery Voltage: %d", battery_get_voltage());
+
+      lcd_set_text(1, tempString1);
+      lcd_set_text(2, tempString2);
+      lcd_set_text(3, tempString3);
+
+      delay(20);
+   }
 }
 
 void autonomous()
 {
+   task_t displayInfoTask = task_create(displayInfoAuton, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Info Task");
    switch (autonNumber)
    {
    case 1:
       flagAuton(false, redAlliance);
-   case 2:
-      flagAuton(true, redAlliance);
    }
 }
