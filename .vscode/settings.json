@@ -20,6 +20,11 @@
       "locale": "c",
       "utils.h": "c",
       "typeinfo": "c",
-      "main.h": "c"
+      "main.h": "c",
+      "__split_buffer": "c",
+      "__tree": "c",
+      "ios": "c",
+      "map": "c",
+      "string": "c"
    }
 }

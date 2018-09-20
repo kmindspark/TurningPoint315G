@@ -3,9 +3,9 @@
 int autonNumber = 0;
 bool redAlliance = false;
 
-#define NUMAUTONS 2
+#define NUMAUTONS 7
 
-static const char *btnm_map[] = {"LF&HF&P F", "HF&P B", ""};
+static const char *btnm_map[] = {"LF&HF&P F", "LF&HF F", "HF&P B", "HF B", "\n", "C&LF&MF&HF&P F", "C&LF&MF&HF F", ""};
 static const char *alliance_map[] = {"Red", "Blue", ""};
 
 void initializeDriveMotors()

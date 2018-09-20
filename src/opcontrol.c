@@ -190,7 +190,7 @@ void flywheel(void *param)
          intakeDirection = 1;
          motor_move(PORT_INTAKE, 127);
          //rapid fire
-         while (motor_get_actual_velocity(PORT_FLYWHEEL) * -1.0 > currentFlywheelGoalRPM - 8)
+         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM - 8)
          {
             if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
                 controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
@@ -211,10 +211,10 @@ void flywheel(void *param)
       }
       else if (knownRPM)
       {
-         if (motor_get_actual_velocity(PORT_FLYWHEEL) * -1.0 > currentFlywheelGoalRPM + 15)
+         if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 15)
          {
             motor_move(PORT_FLYWHEEL, -15);
-            while (motor_get_actual_velocity(PORT_FLYWHEEL) * -1.0 > currentFlywheelGoalRPM + 5)
+            while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 5)
             {
                if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
                    controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
@@ -228,10 +228,10 @@ void flywheel(void *param)
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             delay(1000);
          }
-         if (motor_get_actual_velocity(PORT_FLYWHEEL) * -1.0 < currentFlywheelGoalRPM - 6)
+         if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM - 6)
          {
             motor_move(PORT_FLYWHEEL, 127);
-            while (motor_get_actual_velocity(PORT_FLYWHEEL) * -1.0 < currentFlywheelGoalRPM)
+            while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM)
             {
                if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
                    controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
@@ -242,6 +242,7 @@ void flywheel(void *param)
                }
                delay(20);
             }
+            delay(350);
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             delay(1000);
          }
