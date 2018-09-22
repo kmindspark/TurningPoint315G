@@ -48,11 +48,16 @@ static lv_res_t btnm_action(lv_obj_t *btnm, const char *txt)
    }
    else
    {
-      for (int i = 0; i < NUMAUTONS; i++)
+      int newLineCount = 0;
+      for (int i = 0; i < sizeof(btnm_map) / sizeof(btnm_map[0]); i++)
       {
+         if (strcmp(btnm_map[i], "\n") == 0)
+         {
+            newLineCount++;
+         }
          if (strcmp(btnm_map[i], txt) == 0)
          {
-            autonNumber = i + 1;
+            autonNumber = i + 1 - newLineCount;
             break;
          }
       }
