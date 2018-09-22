@@ -3,16 +3,16 @@
 void turnLeft(int ticks, int power, bool reversed);
 void turnRight(int ticks, int power, bool reversed);
 
-#define ENCODERPRECISION 5
+#define ENCODERPRECISION 2
 #define NUMDRIVEMOTORS 5
-#define VELOCITYLIMIT 2
+#define VELOCITYLIMIT 1
 
 int autonCurrentFlywheelPower = 0;
 int autonCurrentFlywheelGoalRPM = 0;
 
 bool rapidFire = false;
 
-#define RIGHTANGLETURN 735 //850
+#define RIGHTANGLETURN 770 //850
 
 void clearDriveMotors()
 {
@@ -53,11 +53,13 @@ void assignDriveMotorsDist(int leftSide, int rightSide, int power, bool clear, b
    while (abs(motor_get_position(PORT_DRIVELEFTFRONT) - leftSide) + abs(motor_get_position(PORT_DRIVELEFTBACK) - leftSide) +
                   (abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide) + abs(motor_get_position(PORT_DRIVERIGHTBACK) - rightSide)) +
                   (abs(motor_get_position(PORT_DRIVECENTER) - ((leftSide + rightSide) / 2))) >
-              ENCODERPRECISION * NUMDRIVEMOTORS &&
-          (!turn || (averageVelocity() < VELOCITYLIMIT)))
+              ENCODERPRECISION * NUMDRIVEMOTORS ||
+          (turn && (averageVelocity() >= VELOCITYLIMIT)))
    {
       delay(20);
    }
+
+   delay(250);
    assignDriveMotorsPower(0, 0);
 }
 
@@ -198,23 +200,34 @@ void setFlywheelSpeed(int goalPower, int goalRPM)
 
 void displayInfoAuton(void *param)
 {
+
    lcd_initialize();
+
+   delay(1000);
+
    while (true)
    {
       char tempString1[100];
       char tempString2[100];
       char tempString3[100];
+      char tempString4[100];
+
+      int leftSide = -RIGHTANGLETURN;
+      int rightSide = RIGHTANGLETURN;
 
       sprintf(tempString1, "Flywheel Temperature: %d", (int)motor_get_temperature(PORT_FLYWHEEL));
       sprintf(tempString2, "Current Flywheel RPM: %f", -1 * motor_get_actual_velocity(PORT_FLYWHEEL));
       sprintf(tempString3, "Battery Voltage: %d", battery_get_voltage());
-
+      sprintf(tempString4, "Turn: %d", abs(motor_get_position(PORT_DRIVELEFTFRONT) - leftSide) + abs(motor_get_position(PORT_DRIVELEFTBACK) - leftSide) + (abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide) + abs(motor_get_position(PORT_DRIVERIGHTBACK) - rightSide)) + (abs(motor_get_position(PORT_DRIVECENTER) - ((leftSide + rightSide) / 2))));
+      // + abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide)
       lcd_set_text(1, tempString1);
       lcd_set_text(2, tempString2);
       lcd_set_text(3, tempString3);
+      lcd_set_text(4, tempString4);
 
       delay(20);
    }
+   return;
 }
 
 void flagAutonFront(bool park, bool redAlliance)
@@ -242,7 +255,7 @@ void flagAutonFront(bool park, bool redAlliance)
    if (park)
    {
       backward(1750, 200);
-      turnLeft(RIGHTANGLETURN, 200, redAlliance);
+      turnLeft(RIGHTANGLETURN, 100, redAlliance);
 
       assignDriveMotorsPower(127, 200);
       delay(1750);
@@ -268,7 +281,7 @@ void flagAutonBack(bool park, bool redAlliance)
    if (park)
    {
       forward(2000, 200);
-      turnLeft(RIGHTANGLETURN, 200, redAlliance);
+      turnLeft(RIGHTANGLETURN, 100, redAlliance);
 
       assignDriveMotorsPower(127, 200);
       delay(1750);
@@ -311,7 +324,7 @@ void fullAutonFront(bool park, bool redAlliance)
    assignDriveMotorsPower(0, 0);
 
    forwardCoast(150, 50);
-   turnRight(RIGHTANGLETURN, 50, redAlliance);
+   turnRight(RIGHTANGLETURN, 100, redAlliance);
 
    while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < FRONTTILERPM)
    {
@@ -332,7 +345,7 @@ void fullAutonFront(bool park, bool redAlliance)
    {
       backwardCoast(500, 127);
       backward(5000, 200);
-      turnLeft(RIGHTANGLETURN, 150, redAlliance);
+      turnLeft(RIGHTANGLETURN, 100, redAlliance);
       assignDriveMotorsPower(127, 200);
       delay(1750);
       assignDriveMotorsPower(0, 0);
@@ -348,8 +361,8 @@ void fullAutonFront(bool park, bool redAlliance)
 
 void autonomous()
 {
-
    task_t displayInfoTask = task_create(displayInfoAuton, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Info Task");
+
    autonNumber = 5;
    redAlliance = true;
    switch (autonNumber)
