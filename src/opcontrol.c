@@ -289,7 +289,9 @@ void intake(void *param)
 
 void capLift(void *param)
 {
-   motor_move(PORT_CAPLIFT, -10);
+   motor_move(PORT_CAPLIFT, -127);
+   delay(200);
+   motor_move(PORT_CAPLIFT, -20);
    while (true)
    {
       if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1))
@@ -347,6 +349,7 @@ void displayInfo(void *param)
 
 void opcontrol()
 {
+
    //delay(500);
    task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
    task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");

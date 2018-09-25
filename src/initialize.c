@@ -3,9 +3,11 @@
 int autonNumber = 0;
 bool redAlliance = false;
 
-#define NUMAUTONS 7
+#define NUMAUTONS 6
 
-static const char *btnm_map[] = {"LF&HF&P F", "LF&HF F", "HF&P B", "HF B", "\n", "C&LF&MF&HF&P F", "C&LF&MF&HF F", ""};
+static const char *btnm_map[] = {"LF&HF&P F", "LF&HF F", "HF&P B", "HF B", "\n",
+                                 "C&LF&MF&HF&P F", "C&LF&MF&HF F", ""};
+static const char *auton_strings[] = {"LF&HF&P F", "LF&HF F", "HF&P B", "HF B", "C&LF&MF&HF&P F", "C&LF&MF&HF F"};
 static const char *alliance_map[] = {"Red", "Blue", ""};
 
 void initializeDriveMotors()
@@ -36,32 +38,34 @@ void initializeIntakeMotor()
 
 static lv_res_t btnm_action(lv_obj_t *btnm, const char *txt)
 {
+   for (int i = 0; i < sizeof(auton_strings) / sizeof(auton_strings[0]); i++)
+   {
+      printf("%s\n", auton_strings[i]);
+      printf("%s\n", txt);
+      printf("-----------\n");
+      if (strcmp(auton_strings[i], txt) == 0)
+      {
+         autonNumber = i + 1;
+         break;
+      }
+      lv_btnm_set_toggle(btnm, true, autonNumber);
+   }
+
+   return LV_RES_OK; /*Return OK because the button matrix is not deleted*/
+}
+
+static lv_res_t btnm_action_color(lv_obj_t *btnm, const char *txt)
+{
+   lv_btnm_set_toggle(btnm, true, 1);
+   lv_btnm_set_toggle(btnm, true, 2);
+   printf("FUNCTION CALLED");
    if (strcmp(txt, "Red") == 0)
    {
       redAlliance = true;
-      lv_btnm_set_toggle(btnm, true, 1);
    }
    else if (strcmp(txt, "Blue") == 1)
    {
       redAlliance = false;
-      lv_btnm_set_toggle(btnm, true, 2);
-   }
-   else
-   {
-      int newLineCount = 0;
-      for (int i = 0; i < sizeof(btnm_map) / sizeof(btnm_map[0]); i++)
-      {
-         if (strcmp(btnm_map[i], "\n") == 0)
-         {
-            newLineCount++;
-         }
-         if (strcmp(btnm_map[i], txt) == 0)
-         {
-            autonNumber = i + 1 - newLineCount;
-            break;
-         }
-      }
-      lv_btnm_set_toggle(btnm, true, autonNumber);
    }
 
    return LV_RES_OK; /*Return OK because the button matrix is not deleted*/
@@ -75,6 +79,7 @@ void initialize()
 }
 
 void disabled() {}
+
 void competition_initialize()
 {
    lv_theme_alien_init(40, NULL);
@@ -91,7 +96,7 @@ void competition_initialize()
 
    lv_obj_t *allianceM = lv_btnm_create(lv_scr_act(), NULL);
    lv_btnm_set_map(allianceM, alliance_map);
-   lv_btnm_set_action(allianceM, btnm_action);
+   lv_btnm_set_action(allianceM, btnm_action_color);
    lv_obj_set_size(allianceM, LV_HOR_RES - 40, 50);
    lv_obj_align(allianceM, btnm, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
 }
