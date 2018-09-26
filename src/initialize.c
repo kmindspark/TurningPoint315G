@@ -16,18 +16,18 @@ void initializeDriveMotors()
    motor_set_gearing(PORT_DRIVERIGHTFRONT, E_MOTOR_GEARSET_18);
    motor_set_gearing(PORT_DRIVELEFTBACK, E_MOTOR_GEARSET_18);
    motor_set_gearing(PORT_DRIVERIGHTBACK, E_MOTOR_GEARSET_18);
-   motor_set_gearing(PORT_DRIVECENTER, E_MOTOR_GEARSET_18);
    motor_set_reversed(PORT_DRIVELEFTFRONT, false);
    motor_set_reversed(PORT_DRIVERIGHTFRONT, true);
    motor_set_reversed(PORT_DRIVELEFTBACK, false);
    motor_set_reversed(PORT_DRIVERIGHTBACK, true);
-   motor_set_reversed(PORT_DRIVECENTER, false);
 }
 
 void initializeFlywheelMotor()
 {
    motor_set_gearing(PORT_FLYWHEEL, E_MOTOR_GEARSET_36);
+   motor_set_gearing(PORT_INDEXER, E_MOTOR_GEARSET_36);
    motor_set_reversed(PORT_FLYWHEEL, true);
+   motor_set_reversed(PORT_INDEXER, false);
 }
 
 void initializeIntakeMotor()

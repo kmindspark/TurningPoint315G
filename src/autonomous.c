@@ -5,7 +5,7 @@ void turnRight(int ticks, int power, bool reversed);
 
 #define TURNENCODERPRECISION 5
 #define MOVEENCODERPRECISION 7
-#define NUMDRIVEMOTORS 5
+#define NUMDRIVEMOTORS 4
 #define VELOCITYLIMIT 3
 
 int autonCurrentFlywheelPower = 0;
@@ -21,7 +21,6 @@ void clearDriveMotors()
    motor_tare_position(PORT_DRIVELEFTBACK);
    motor_tare_position(PORT_DRIVERIGHTFRONT);
    motor_tare_position(PORT_DRIVERIGHTBACK);
-   motor_tare_position(PORT_DRIVECENTER);
 }
 
 void assignDriveMotorsPower(int leftSide, int rightSide)
@@ -30,7 +29,6 @@ void assignDriveMotorsPower(int leftSide, int rightSide)
    motor_move(PORT_DRIVELEFTBACK, leftSide);
    motor_move(PORT_DRIVERIGHTFRONT, rightSide);
    motor_move(PORT_DRIVERIGHTBACK, rightSide);
-   motor_move(PORT_DRIVECENTER, (leftSide + rightSide) / 2.0);
 }
 
 double averageVelocity()
@@ -56,10 +54,8 @@ void assignDriveMotorsDist(int leftSide, int rightSide, int power, bool clear, b
    motor_move_absolute(PORT_DRIVELEFTBACK, leftSide, power);
    motor_move_absolute(PORT_DRIVERIGHTFRONT, rightSide, power);
    motor_move_absolute(PORT_DRIVERIGHTBACK, rightSide, power);
-   motor_move_absolute(PORT_DRIVECENTER, (leftSide + rightSide) / 2.0, power);
    while (abs(motor_get_position(PORT_DRIVELEFTFRONT) - leftSide) + abs(motor_get_position(PORT_DRIVELEFTBACK) - leftSide) +
-              (abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide) + abs(motor_get_position(PORT_DRIVERIGHTBACK) - rightSide)) +
-              (abs(motor_get_position(PORT_DRIVECENTER) - ((leftSide + rightSide) / 2))) >
+              (abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide) + abs(motor_get_position(PORT_DRIVERIGHTBACK) - rightSide)) >
           currentPrecision * NUMDRIVEMOTORS /* ||
           (turn && (averageVelocity() >= VELOCITYLIMIT))*/
    )
@@ -100,8 +96,7 @@ void forwardCoast(int ticks, int power)
    clearDriveMotors();
    assignDriveMotorsPower(power, power);
    while (abs(motor_get_position(PORT_DRIVELEFTFRONT)) + abs(motor_get_position(PORT_DRIVELEFTBACK)) +
-              abs(motor_get_position(PORT_DRIVERIGHTFRONT)) + abs(motor_get_position(PORT_DRIVERIGHTBACK)) +
-              abs(motor_get_position(PORT_DRIVECENTER)) <
+              abs(motor_get_position(PORT_DRIVERIGHTFRONT)) + abs(motor_get_position(PORT_DRIVERIGHTBACK)) <
           ticks * NUMDRIVEMOTORS)
    {
       delay(20);
@@ -114,8 +109,7 @@ void backwardCoast(int ticks, int power)
    clearDriveMotors();
    assignDriveMotorsPower(-power, -power);
    while (abs(motor_get_position(PORT_DRIVELEFTFRONT)) + abs(motor_get_position(PORT_DRIVELEFTBACK)) +
-              abs(motor_get_position(PORT_DRIVERIGHTFRONT)) + abs(motor_get_position(PORT_DRIVERIGHTBACK)) +
-              abs(motor_get_position(PORT_DRIVECENTER)) <
+              abs(motor_get_position(PORT_DRIVERIGHTFRONT)) + abs(motor_get_position(PORT_DRIVERIGHTBACK)) <
           ticks * NUMDRIVEMOTORS)
    {
       delay(20);
@@ -224,7 +218,7 @@ void displayInfoAuton(void *param)
       sprintf(tempString1, "Flywheel Temperature: %d", (int)motor_get_temperature(PORT_FLYWHEEL));
       sprintf(tempString2, "Current Flywheel RPM: %f", -1 * motor_get_actual_velocity(PORT_FLYWHEEL));
       sprintf(tempString3, "Battery Voltage: %d", autonNumber);
-      sprintf(tempString4, "Turn: %d", abs(motor_get_position(PORT_DRIVELEFTFRONT) - leftSide) + abs(motor_get_position(PORT_DRIVELEFTBACK) - leftSide) + (abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide) + abs(motor_get_position(PORT_DRIVERIGHTBACK) - rightSide)) + (abs(motor_get_position(PORT_DRIVECENTER) - ((leftSide + rightSide) / 2))));
+      sprintf(tempString4, "Turn: %d", abs(motor_get_position(PORT_DRIVELEFTFRONT) - leftSide) + abs(motor_get_position(PORT_DRIVELEFTBACK) - leftSide) + (abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide) + abs(motor_get_position(PORT_DRIVERIGHTBACK) - rightSide)));
       // + abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide)
       lcd_set_text(1, tempString1);
       lcd_set_text(2, tempString2);

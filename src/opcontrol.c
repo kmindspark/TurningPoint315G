@@ -1,8 +1,10 @@
 #include "main.h"
 
 int intakeDirection = 0;
+int indexerDirection = 0;
 int currentFlywheelPower = 0;
 int currentFlywheelGoalRPM = 0;
+int currentAssignedFlywheelPower = 0;
 int middleFlagXCoord = 0;
 bool knownRPM;
 
@@ -22,7 +24,14 @@ void assignDriveMotorsDControl(int leftSide, int rightSide)
    motor_move(PORT_DRIVELEFTBACK, leftSide);
    motor_move(PORT_DRIVERIGHTFRONT, rightSide);
    motor_move(PORT_DRIVERIGHTBACK, rightSide);
-   motor_move(PORT_DRIVECENTER, (leftSide + rightSide) / 2.0);
+}
+
+bool anyButtonPressed()
+{
+   return controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
+          controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
+          controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
+          controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y);
 }
 
 void turnToFlag(int sigNum)
@@ -125,9 +134,16 @@ void drive(void *param)
       motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
       motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward + turn)));
       motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward - turn)));
-      motor_move(PORT_DRIVECENTER, max(-127, min(127, forward)));
 
       delay(20);
+   }
+}
+
+void assignIndexerFree(int power)
+{
+   if (indexerDirection == 0)
+   {
+      motor_move(PORT_INDEXER, power);
    }
 }
 
@@ -141,110 +157,98 @@ void flywheel(void *param)
          firstIter = false;
          currentFlywheelPower = HIGHFLAGPOWER;
          currentFlywheelGoalRPM = HIGHFLAGRPM;
+         currentAssignedFlywheelPower = HIGHFLAGPOWER;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+         assignIndexerFree(currentFlywheelPower);
          knownRPM = true;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A))
       {
          currentFlywheelPower = MIDDLEFLAGPOWER;
          currentFlywheelGoalRPM = MIDDLEFLAGRPM;
+         currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+         assignIndexerFree(currentFlywheelPower);
          knownRPM = true;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
       {
          currentFlywheelPower = BETWEENFLAGPOWER;
          currentFlywheelGoalRPM = BETWEEENFLAGRPM;
+         currentAssignedFlywheelPower = BETWEENFLAGPOWER;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+         assignIndexerFree(currentFlywheelPower);
          knownRPM = true;
       }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN))
-      {
-         if (currentFlywheelPower > 0)
-         {
-            currentFlywheelPower--;
-            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-            delay(300);
-            knownRPM = false;
-         }
-      }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
-      {
-         if (currentFlywheelPower < 127)
-         {
-            currentFlywheelPower++;
-            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-            delay(300);
-            knownRPM = false;
-         }
-      }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
-               (motor_get_temperature(PORT_FLYWHEEL) > MAXALLOWEDTEMP && !OVERRIDETEMP))
+      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B))
       {
          currentFlywheelPower = 0;
+         currentFlywheelGoalRPM = 0;
+         currentAssignedFlywheelPower = 0;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+         assignIndexerFree(currentFlywheelPower);
          knownRPM = false;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT))
       {
-         intakeDirection = 1;
-         motor_move(PORT_INTAKE, 127);
+         indexerDirection = -1;
+         motor_move(PORT_INDEXER, -127);
+
          //rapid fire
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM - 8)
          {
-            if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
-                controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
-                controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
-                controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
+            if (anyButtonPressed())
             {
                break;
             }
             delay(20);
          }
 
-         motor_move(PORT_FLYWHEEL, -35);
+         motor_move(PORT_FLYWHEEL, -40);
          currentFlywheelGoalRPM = MIDDLEFLAGRPM;
          currentFlywheelPower = MIDDLEFLAGPOWER;
          delay(150);
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         delay(1000);
+         delay(1500);
+         firstIter = true;
       }
       else if (knownRPM)
       {
          if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 15)
          {
             motor_move(PORT_FLYWHEEL, -15);
+
             while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 5)
             {
-               if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
-                   controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
-                   controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
-                   controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
+               if (anyButtonPressed())
                {
                   break;
                }
                delay(20);
             }
-            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-            delay(1000);
+            if (!(anyButtonPressed()))
+            {
+               motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+               delay(1000);
+            }
          }
          if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM - 6)
          {
             motor_move(PORT_FLYWHEEL, 127);
             while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM)
             {
-               if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
-                   controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
-                   controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
-                   controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
+               if (anyButtonPressed())
                {
                   break;
                }
                delay(20);
             }
-            delay(350);
-            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-            delay(1000);
+            if (!anyButtonPressed())
+            {
+               delay(350);
+               motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+               delay(1000);
+            }
          }
       }
       delay(20);
@@ -255,7 +259,7 @@ void intake(void *param)
 {
    while (true)
    {
-      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1))
+      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
       {
          if (intakeDirection != 1)
          {
@@ -269,7 +273,7 @@ void intake(void *param)
          }
          delay(250);
       }
-      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2))
+      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN))
       {
          if (intakeDirection != -1)
          {
@@ -282,6 +286,28 @@ void intake(void *param)
             intakeDirection = 0;
          }
          delay(250);
+      }
+      delay(20);
+   }
+}
+
+void indexer(void *param)
+{
+   while (true)
+   {
+      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1))
+      {
+         if (indexerDirection != 1)
+         {
+            motor_move(PORT_INDEXER, -127);
+            indexerDirection = 1;
+            while (indexerDirection == 1)
+            {
+               //wait
+            }
+            motor_move(PORT_INDEXER, currentAssignedFlywheelPower);
+            indexerDirection = 0;
+         }
       }
       delay(20);
    }
@@ -327,7 +353,7 @@ void displayInfo(void *param)
       char tempString6[100];
 
       sprintf(tempString1, "Flywheel Temperature: %d", (int)motor_get_temperature(PORT_FLYWHEEL));
-      sprintf(tempString2, "Current Flywheel RPM: %f", -1 * motor_get_actual_velocity(PORT_FLYWHEEL));
+      sprintf(tempString2, "Current Flywheel RPM: %f", abs(motor_get_actual_velocity(PORT_FLYWHEEL)));
       sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
       sprintf(tempString4, "Goal Power: %d", currentFlywheelPower);
       sprintf(tempString5, "Middle Coord: %d", middleFlagXCoord);
@@ -340,8 +366,7 @@ void displayInfo(void *param)
       lcd_set_text(5, tempString5);
       lcd_set_text(6, tempString6);
 
-      //controller_print(CONTROLLER_MASTER, 0, 0, "RPM: %.2f", motor_get_actual_velocity(PORT_FLYWHEEL));
-      //controller_print(CONTROLLER_MASTER, 1, 0, "Volts: %.2f", battery_get_voltage());
+      controller_print(CONTROLLER_MASTER, 0, 0, "RPM: %.2f", motor_get_actual_velocity(PORT_FLYWHEEL));
 
       delay(20);
    }
