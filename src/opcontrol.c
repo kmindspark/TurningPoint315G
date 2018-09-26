@@ -205,9 +205,10 @@ void flywheel(void *param)
          }
 
          motor_move(PORT_FLYWHEEL, -40);
+         delay(150);
          currentFlywheelGoalRPM = MIDDLEFLAGRPM;
          currentFlywheelPower = MIDDLEFLAGPOWER;
-         delay(150);
+         currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
          delay(1500);
          firstIter = true;
@@ -355,7 +356,7 @@ void displayInfo(void *param)
       sprintf(tempString1, "Flywheel Temperature: %d", (int)motor_get_temperature(PORT_FLYWHEEL));
       sprintf(tempString2, "Current Flywheel RPM: %f", abs(motor_get_actual_velocity(PORT_FLYWHEEL)));
       sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
-      sprintf(tempString4, "Goal Power: %d", currentFlywheelPower);
+      sprintf(tempString4, "Cur Power: %d", currentAssignedFlywheelPower);
       sprintf(tempString5, "Middle Coord: %d", middleFlagXCoord);
       sprintf(tempString6, "Battery Voltage: %d", battery_get_voltage());
 
