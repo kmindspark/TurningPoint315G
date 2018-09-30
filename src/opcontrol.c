@@ -217,8 +217,8 @@ void flywheel(void *param)
       {
          if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 15)
          {
-            motor_move(PORT_FLYWHEEL, -15);
-
+            currentAssignedFlywheelPower = -15;
+            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
             while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 5)
             {
                if (anyButtonPressed())
@@ -230,12 +230,16 @@ void flywheel(void *param)
             if (!(anyButtonPressed()))
             {
                motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+               assignIndexerFree(currentFlywheelPower);
+               currentAssignedFlywheelPower = currentFlywheelPower;
                delay(1000);
             }
          }
          if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM - 6)
          {
-            motor_move(PORT_FLYWHEEL, 127);
+            currentAssignedFlywheelPower = 127;
+            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
+            assignIndexerFree(currentAssignedFlywheelPower);
             while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM)
             {
                if (anyButtonPressed())
@@ -248,6 +252,8 @@ void flywheel(void *param)
             {
                delay(350);
                motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+               assignIndexerFree(currentFlywheelPower);
+               currentAssignedFlywheelPower = currentFlywheelPower;
                delay(1000);
             }
          }
@@ -296,17 +302,18 @@ void indexer(void *param)
 {
    while (true)
    {
-      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1))
+      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 1)
       {
          if (indexerDirection != 1)
          {
             motor_move(PORT_INDEXER, -127);
             indexerDirection = 1;
-            while (indexerDirection == 1)
+            while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 1)
             {
+               delay(20);
                //wait
             }
-            motor_move(PORT_INDEXER, currentAssignedFlywheelPower);
+            motor_move(PORT_INDEXER, max(currentAssignedFlywheelPower, 0));
             indexerDirection = 0;
          }
       }
@@ -354,10 +361,10 @@ void displayInfo(void *param)
       char tempString6[100];
 
       sprintf(tempString1, "Flywheel Temperature: %d", (int)motor_get_temperature(PORT_FLYWHEEL));
-      sprintf(tempString2, "Current Flywheel RPM: %f", abs(motor_get_actual_velocity(PORT_FLYWHEEL)));
+      sprintf(tempString2, "Current Flywheel RPM: %d", abs(motor_get_actual_velocity(PORT_FLYWHEEL)));
       sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
       sprintf(tempString4, "Cur Power: %d", currentAssignedFlywheelPower);
-      sprintf(tempString5, "Middle Coord: %d", middleFlagXCoord);
+      sprintf(tempString5, "Ind dir: %d", indexerDirection);
       sprintf(tempString6, "Battery Voltage: %d", battery_get_voltage());
 
       lcd_set_text(1, tempString1);
@@ -380,6 +387,7 @@ void opcontrol()
    task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
    task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
    task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
+   task_t indexerTask = task_create(indexer, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Indexer Task");
    task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
    task_t displayInfoTask = task_create(displayInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Info Task");
 

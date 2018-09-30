@@ -8,6 +8,8 @@ void turnRight(int ticks, int power, bool reversed);
 #define NUMDRIVEMOTORS 4
 #define VELOCITYLIMIT 3
 
+int indexerDirectionAuton = 0;
+
 int autonCurrentFlywheelPower = 0;
 int autonCurrentFlywheelGoalRPM = 0;
 
@@ -142,6 +144,19 @@ void setIntakePower(int intakePower)
    motor_move(PORT_INTAKE, intakePower);
 }
 
+void setIndexerPower(int indexerPower)
+{
+   motor_move(PORT_INDEXER, indexerPower);
+   if (indexerPower > 0)
+   {
+      indexerDirectionAuton = 1;
+   }
+   else
+   {
+      indexerDirectionAuton = 0;
+   }
+}
+
 void setCapLiftPower(int capPower)
 {
    motor_move(PORT_CAPLIFT, capPower);
@@ -150,6 +165,7 @@ void setCapLiftPower(int capPower)
 void autonFlywheel(void *param)
 {
    motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
+   motor_move(PORT_INDEXER, autonCurrentFlywheelPower);
    while (true)
    {
       if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM + 15)
@@ -204,7 +220,6 @@ void displayInfoAuton(void *param)
 {
 
    lcd_initialize();
-
    while (true)
    {
       char tempString1[100];
