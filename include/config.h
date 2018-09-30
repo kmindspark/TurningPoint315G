@@ -18,7 +18,6 @@
 
 #define FRONTTILEPOWER 106
 #define FRONTTILERPM 92
-
 #define BACKTILEPOWER 110
 #define BACKTILERPM 97
 
@@ -32,6 +31,8 @@
 
 #define KPFLYWHEEL 0.5
 #define KIFLYWHEEL 0.05
+
+#define EXTRAPOWER 10
 
 extern int autonNumber;
 extern bool redAlliance;

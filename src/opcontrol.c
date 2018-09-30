@@ -191,10 +191,10 @@ void flywheel(void *param)
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT))
       {
-         indexerDirection = -1;
-         motor_move(PORT_INDEXER, -127);
-
          //rapid fire
+         indexerDirection = 1;
+         motor_move(PORT_INDEXER, -127);
+         motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM - 8)
          {
             if (anyButtonPressed())
@@ -307,6 +307,7 @@ void indexer(void *param)
          if (indexerDirection != 1)
          {
             motor_move(PORT_INDEXER, -127);
+            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
             indexerDirection = 1;
             while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 1)
             {
@@ -314,6 +315,7 @@ void indexer(void *param)
                //wait
             }
             motor_move(PORT_INDEXER, max(currentAssignedFlywheelPower, 0));
+            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
             indexerDirection = 0;
          }
       }
