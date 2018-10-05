@@ -264,7 +264,7 @@ void flagAutonFront(bool park, bool redAlliance)
       delay(20);
    }
    delay(500);
-   setIntakePower(127);
+   setIndexerPower(127);
    delay(500);
    turnRight(35, 200, redAlliance);
 
@@ -294,8 +294,8 @@ void flagAutonBack(bool park, bool redAlliance)
    {
       delay(20);
    }
-   delay(750);
-   setIntakePower(127);
+   delay(500);
+   setIndexerPower(127);
    delay(1500);
 
    turnRight(RIGHTANGLETURN / 3 - 20, 100, redAlliance);
