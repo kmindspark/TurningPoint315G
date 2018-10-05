@@ -180,6 +180,7 @@ void autonFlywheel(void *param)
       if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < autonCurrentFlywheelGoalRPM - 6)
       {
          motor_move(PORT_FLYWHEEL, 127);
+         setIndexerPower(127);
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < autonCurrentFlywheelGoalRPM)
          {
             delay(20);
@@ -189,7 +190,7 @@ void autonFlywheel(void *param)
       }
       if (rapidFire)
       {
-         setIntakePower(127);
+         setIndexerPower(127);
          motor_move(PORT_INTAKE, 127);
          //rapid fire
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM - 8)
@@ -197,10 +198,10 @@ void autonFlywheel(void *param)
             delay(20);
          }
 
-         motor_move(PORT_FLYWHEEL, -35);
+         motor_move(PORT_FLYWHEEL, -70);
          autonCurrentFlywheelGoalRPM = MIDDLEFLAGRPM;
          autonCurrentFlywheelPower = MIDDLEFLAGPOWER;
-         delay(150);
+         delay(115);
          motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
          delay(1000);
 
@@ -333,7 +334,6 @@ void fullAutonFront(bool park, bool redAlliance)
    forwardCoast(1800, 127);
    setIntakePower(127);
    forward(400, 120);
-   setIntakePower(0);
    assignDriveMotorsPower(0, 0);
    delay(400);
 
@@ -351,10 +351,8 @@ void fullAutonFront(bool park, bool redAlliance)
    {
       delay(20);
    }
-   setIntakePower(127);
-   delay(350);
    rapidFire = true;
-   delay(1500);
+   delay(500);
 
    turnRight(30, 200, redAlliance);
 
