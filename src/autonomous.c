@@ -190,18 +190,20 @@ void autonFlywheel(void *param)
       }
       if (rapidFire)
       {
-         setIndexerPower(127);
-         motor_move(PORT_INTAKE, 127);
+         setIndexerPower(-127);
+         motor_move(PORT_INTAKE, 90);
          //rapid fire
-         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM - 8)
+         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM - 6)
          {
             delay(20);
          }
-
-         motor_move(PORT_FLYWHEEL, -70);
+         setIndexerPower(0);
+         motor_move(PORT_FLYWHEEL, -127);
          autonCurrentFlywheelGoalRPM = MIDDLEFLAGRPM;
          autonCurrentFlywheelPower = MIDDLEFLAGPOWER;
-         delay(115);
+         delay(225);
+         setIndexerPower(-127);
+         delay(300);
          motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
          delay(1000);
 
@@ -264,7 +266,7 @@ void flagAutonFront(bool park, bool redAlliance)
       delay(20);
    }
    delay(500);
-   setIndexerPower(127);
+   setIndexerPower(-127);
    delay(500);
    turnRight(35, 200, redAlliance);
 
@@ -295,7 +297,7 @@ void flagAutonBack(bool park, bool redAlliance)
       delay(20);
    }
    delay(500);
-   setIndexerPower(127);
+   setIndexerPower(-127);
    delay(1500);
 
    turnRight(RIGHTANGLETURN / 3 - 20, 100, redAlliance);
@@ -326,39 +328,39 @@ void fullAutonFront(bool park, bool redAlliance)
    forwardCoast(1000, 50);
    forwardCoast(600, 100);
    backwardCoast(200, 50);
-   backward(2350, 150);
+   backward(2100, 190);
 
-   turnLeft(RIGHTANGLETURN / 2 + 30, 120, redAlliance);
+   turnLeft(RIGHTANGLETURN / 2 + 110, 120, redAlliance);
 
    forwardCoast(200, 70);
    forwardCoast(1800, 127);
    setIntakePower(127);
    forward(400, 120);
    assignDriveMotorsPower(0, 0);
-   delay(400);
 
-   assignDriveMotorsPower(-127, -127);
-   delay(1000);
-   assignDriveMotorsPower(-50, -50);
-   delay(200);
+   turnLeft(60, 200, redAlliance);
+   backwardCoast(3000, 127);
+   assignDriveMotorsPower(-100, -100);
+   delay(300);
    assignDriveMotorsPower(0, 0);
 
-   forwardCoast(230, 50); //150
+   forwardCoast(200, 50); //230, 150
    turnRight(RIGHTANGLETURN, 100, redAlliance);
    //backward(200, 50);
 
-   while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < HIGHFLAGRPM)
+   /*while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < HIGHFLAGRPM)
    {
       delay(20);
-   }
+   }*/
    rapidFire = true;
    delay(500);
 
    turnRight(30, 200, redAlliance);
 
-   forward(3100, 200);
-   assignDriveMotorsPower(80, 80);
-   delay(200);
+   /*forwardCoast(2800, 120); //3100
+   assignDriveMotorsPower(90, 90);
+   delay(300);*/
+   forward(2400, 180); //2800
 
    task_suspend(flywheelTask);
    task_delete(flywheelTask);
@@ -366,8 +368,9 @@ void fullAutonFront(bool park, bool redAlliance)
 
    if (park)
    {
-      backwardCoast(500, 127);
-      backward(5000, 200);
+      //backwardCoast(500, 127);
+      backward(5100, 200);
+      delay(150);
       turnLeft(RIGHTANGLETURN, 100, redAlliance);
       assignDriveMotorsPower(127, 127);
       delay(1750);

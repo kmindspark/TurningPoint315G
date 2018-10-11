@@ -191,9 +191,10 @@ void flywheel(void *param)
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT))
       {
+         
          //rapid fire
          indexerDirection = 1;
-         motor_move(PORT_INDEXER, -127);
+         motor_move(PORT_INDEXER, -85);
          motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM - 6)
          {
@@ -203,17 +204,25 @@ void flywheel(void *param)
             }
             delay(20);
          }
-
-         motor_move(PORT_FLYWHEEL, -70);
-         delay(115);
+         motor_move(PORT_INDEXER, 0);
+         motor_move(PORT_FLYWHEEL, -127);
+         //motor_move(PORT_FLYWHEEL, -80);
          currentFlywheelGoalRPM = MIDDLEFLAGRPM;
          currentFlywheelPower = MIDDLEFLAGPOWER;
          currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
+         delay(305);
+         indexerDirection = 10;
+         motor_move(PORT_INDEXER, -127);
+         //delay(300);
+         //delay(150); //160*//*
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+         delay(200);
          motor_move(PORT_INDEXER, currentFlywheelPower);
          delay(1000);
          indexerDirection = 0;
-         firstIter = true;
+         firstIter = true;*/
+
+         //motor_move(PORT_FLYWHEEL, -127);
       }
       else if (knownRPM)
       {
@@ -375,9 +384,9 @@ void displayInfo(void *param)
       lcd_set_text(5, tempString5);
       lcd_set_text(6, tempString6);
 
-      controller_print(CONTROLLER_MASTER, 0, 0, "RPM: %.2f", motor_get_actual_velocity(PORT_FLYWHEEL));
+      //controller_print(CONTROLLER_MASTER, 0, 0, "RPM: %.2f", motor_get_actual_velocity(PORT_FLYWHEEL));
 
-      delay(20);
+      delay(10);
    }
 }
 
