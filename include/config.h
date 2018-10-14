@@ -9,8 +9,8 @@
 #define PORT_INDEXER 8
 #define PORT_VISION 9
 
-#define HIGHFLAGPOWER 120
-#define HIGHFLAGRPM 105
+#define HIGHFLAGPOWER 117
+#define HIGHFLAGRPM 96
 #define MIDDLEFLAGPOWER 72 //78
 #define MIDDLEFLAGRPM 68
 #define BETWEENFLAGPOWER 100
@@ -32,7 +32,7 @@
 #define KPFLYWHEEL 0.5
 #define KIFLYWHEEL 0.05
 
-#define EXTRAPOWER 10
+#define EXTRAPOWER 4
 
 extern int autonNumber;
 extern bool redAlliance;
