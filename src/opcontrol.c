@@ -212,7 +212,7 @@ void flywheel(void *param)
             }
             delay(20);
          }
-         motor_move_velocity(PORT_INDEXER, 0);
+         //motor_move_velocity(PORT_INDEXER, 0);
          //motor_move(PORT_INDEXER, 0);
          currentFlywheelGoalRPM = MIDDLEFLAGRPM;
          currentFlywheelPower = MIDDLEFLAGPOWER;
@@ -220,12 +220,12 @@ void flywheel(void *param)
 
          //motor_move_velocity(PORT_FLYWHEEL, -127);
          motor_move(PORT_FLYWHEEL, -35); //35
-         delay(200);
+         delay(150);
          //delay(150); //delay(130);
          //motor_move(PORT_INDEXER, -127);
          //delay(200); //delay(200);
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         delay(200);
+         delay(000);
          motor_move(PORT_INDEXER, -127);
 
          //    delay(300);

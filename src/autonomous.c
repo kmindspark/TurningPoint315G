@@ -317,7 +317,7 @@ void flagAutonBack(bool park, bool redAlliance)
    motor_move(PORT_FLYWHEEL, 0);
 }
 
-void fullAutonFront(bool park, bool redAlliance)
+void fullAutonFrontOldPath(bool park, bool redAlliance)
 {
    setCapLiftPower(-10);
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
@@ -374,6 +374,69 @@ void fullAutonFront(bool park, bool redAlliance)
       turnLeft(RIGHTANGLETURN, 100, redAlliance);
       assignDriveMotorsPower(127, 127);
       delay(1750);
+      assignDriveMotorsPower(0, 0);
+   }
+   else
+   {
+      delay(1000);
+      setIntakePower(0);
+   }
+}
+
+void fullAutonFront(bool park, bool redAlliance)
+{
+   setCapLiftPower(-10);
+   task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
+   setFlywheelSpeed(HIGHFLAGPOWER, HIGHFLAGRPM);
+
+   forwardCoast(200, 70);
+   forwardCoast(1800, 127);
+   setIntakePower(127);
+   forward(400, 120);
+   assignDriveMotorsPower(0, 0);
+
+   //turnLeft(60, 200, redAlliance);
+   backwardCoast(2700, 127);
+   assignDriveMotorsPower(-100, -100);
+   delay(300);
+   assignDriveMotorsPower(0, 0);
+
+   forwardCoast(200, 50); //230, 150
+   turnRight(RIGHTANGLETURN, 100, redAlliance);
+   //backward(200, 50);
+
+   /*while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < HIGHFLAGRPM)
+   {
+      delay(20);
+   }*/
+   rapidFire = true;
+   delay(700);
+
+   turnRight(50, 200, redAlliance);
+
+   /*forwardCoast(2800, 120); //3100
+   assignDriveMotorsPower(90, 90);
+   delay(300);*/
+   forward(2000, 180); //2800
+
+   task_suspend(flywheelTask);
+   task_delete(flywheelTask);
+   motor_move(PORT_FLYWHEEL, 0);
+
+   if (park)
+   {
+      //backwardCoast(500, 127);
+      backward(2000, 200);
+      delay(150);
+      turnLeft(RIGHTANGLETURN, 100, redAlliance);
+      forwardCoast(1000, 50);
+      forwardCoast(600, 100);
+      forward(100, 150);
+
+      turnLeft(RIGHTANGLETURN, 100, redAlliance);
+
+      assignDriveMotorsPower(127, 127);
+      delay(2100);
       assignDriveMotorsPower(0, 0);
    }
    else
