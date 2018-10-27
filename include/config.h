@@ -10,16 +10,16 @@
 #define PORT_VISION 9
 
 #define HIGHFLAGPOWER 119
-#define HIGHFLAGRPM 100
+#define HIGHFLAGRPM 102
 #define MIDDLEFLAGPOWER 72 //78
 #define MIDDLEFLAGRPM 65
 #define BETWEENFLAGPOWER 100
 #define BETWEEENFLAGRPM 90
 
-#define FRONTTILEPOWER 106
-#define FRONTTILERPM 92
-#define BACKTILEPOWER 110
-#define BACKTILERPM 97
+#define FRONTTILEPOWER 93
+#define FRONTTILERPM 75
+#define BACKTILEPOWER 103
+#define BACKTILERPM 94
 
 #define OVERRIDETEMP true
 #define MAXALLOWEDTEMP 45
@@ -33,6 +33,8 @@
 #define KIFLYWHEEL 0.05
 
 #define EXTRAPOWER 4
+
+#define DIFFBRAKE 20
 
 extern int autonNumber;
 extern bool redAlliance;

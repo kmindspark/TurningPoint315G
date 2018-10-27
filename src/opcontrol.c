@@ -195,12 +195,9 @@ void flywheel(void *param)
 
          //rapid fire
          indexerDirection = 1;
-         motor_move_velocity(PORT_INDEXER, -75);
+         motor_move(PORT_INDEXER, -127);
          motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
          delay(100);
-         motor_move(PORT_INTAKE, 0);
-         /*delay(200);
-         motor_move_velocity(PORT_INDEXER, -70);*/
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM - 8)
          {
             if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
@@ -212,34 +209,18 @@ void flywheel(void *param)
             }
             delay(20);
          }
-         //motor_move_velocity(PORT_INDEXER, 0);
-         //motor_move(PORT_INDEXER, 0);
 
-         //motor_move_velocity(PORT_FLYWHEEL, -127);
-         motor_move(PORT_FLYWHEEL, -35); //35
+         motor_move(PORT_FLYWHEEL, -50);
          currentFlywheelGoalRPM = MIDDLEFLAGRPM;
          currentFlywheelPower = MIDDLEFLAGPOWER;
          currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
          delay(150);
-         //delay(150); //delay(130);
-         //motor_move(PORT_INDEXER, -127);
-         //delay(200); //delay(200);
-
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         delay(000);
-         motor_move(PORT_INDEXER, -127);
-
-         //    delay(300);
-         indexerDirection = 10;
-
          delay(1000);
          motor_move(PORT_INDEXER, currentFlywheelPower);
-         delay(1000);
          motor_move(PORT_INTAKE, 127);
          indexerDirection = 0;
          firstIter = true;
-
-         //motor_move(PORT_FLYWHEEL, -127);
       }
       else if (knownRPM)
       {
