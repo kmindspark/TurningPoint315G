@@ -8,6 +8,10 @@ int currentAssignedFlywheelPower = 0;
 int middleFlagXCoord = 0;
 bool knownRPM;
 
+bool doubleFire = false;
+bool singleFire = false;
+int numVisionObjects = 0;
+
 #define max(a, b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
@@ -34,36 +38,86 @@ bool anyButtonPressed()
           controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y);
 }
 
+vision_object_s_t getTopFlag(int sigNum)
+{
+   vision_object_s_t object_arr[NUM_VISION_OBJECTS];
+   vision_read_by_sig(PORT_VISION, 0, sigNum, NUM_VISION_OBJECTS, object_arr);
+
+   numVisionObjects = sizeof(object_arr) / sizeof(object_arr[0]);
+
+   if (numVisionObjects == 0 || numVisionObjects > 2)
+   {
+      vision_object_s_t temp = {.x_middle_coord = 0};
+      return temp;
+   }
+   if (numVisionObjects == 1)
+   {
+      return object_arr[0];
+   }
+   else
+   {
+      if (object_arr[0].y_middle_coord > object_arr[1].y_middle_coord)
+      {
+         return object_arr[0];
+      }
+      else
+      {
+         return object_arr[1];
+      }
+   }
+}
+
+void newVisionAlign(int sigNum)
+{
+   turnToFlag(sigNum);
+   moveToFlag(sigNum);
+   turnToFlag(sigNum);
+   getTopFlag(sigNum);
+
+   if (numVisionObjects == 2)
+   {
+      doubleFire = true;
+   }
+   if (numVisionObjects == 1)
+   {
+      singleFire = true;
+   }
+}
+
 void turnToFlag(int sigNum)
 {
-   vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
+   vision_object_s_t flag = getTopFlag(sigNum);
+   if (numVisionObjects == 0)
+   {
+      return;
+   }
 
-   if (sizeFlag.x_middle_coord > VISION_FOV_WIDTH / 2)
+   if (flag.x_middle_coord > VISION_FOV_WIDTH / 2 + ANGLETOLERANCE)
    {
       assignDriveMotorsDControl(40, -40);
-      while (sizeFlag.x_middle_coord > VISION_FOV_WIDTH / 2)
+      while (flag.x_middle_coord > VISION_FOV_WIDTH / 2)
       {
          if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
          {
             return;
          }
-         printf("%d\n", (int)sizeFlag.x_middle_coord);
-         sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
+         printf("%d\n", (int)flag.x_middle_coord);
+         flag = getTopFlag(sigNum);
          delay(20);
       }
       assignDriveMotorsDControl(-20, 20);
    }
-   else
+   else if (flag.x_middle_coord < VISION_FOV_WIDTH / 2 - ANGLETOLERANCE)
    {
       assignDriveMotorsDControl(-40, 40);
-      while (sizeFlag.x_middle_coord < VISION_FOV_WIDTH / 2)
+      while (flag.x_middle_coord < VISION_FOV_WIDTH / 2)
       {
          if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
          {
             return;
          }
-         printf("%d\n", (int)sizeFlag.x_middle_coord);
-         sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
+         printf("%d\n", (int)flag.x_middle_coord);
+         flag = getTopFlag(sigNum);
          delay(20);
       }
       assignDriveMotorsDControl(20, -20);
@@ -73,36 +127,40 @@ void turnToFlag(int sigNum)
    assignDriveMotorsDControl(0, 0);
 }
 
-void moveDistToFlag(int sigNum)
+void moveToFlag(int sigNum)
 {
-   vision_object_s_t sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
+   vision_object_s_t flag = getTopFlag(sigNum);
+   if (numVisionObjects == 0)
+   {
+      return;
+   }
 
-   if (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT)
+   if (flag.height < FLAGPIXELHEIGHT / 2 - HEIGHTTOLERANCE)
    {
       assignDriveMotorsDControl(40, 40);
-      while (sizeFlag.height < MIDDLEFLAGPIXELHEIGHT)
+      while (flag.height > VISION_FOV_WIDTH / 2)
       {
          if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
          {
             return;
          }
-         printf("%d\n", (int)sizeFlag.height);
-         sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
+         printf("%d\n", (int)flag.height);
+         flag = getTopFlag(sigNum);
          delay(20);
       }
       assignDriveMotorsDControl(-20, -20);
    }
-   else
+   else if (flag.height > FLAGPIXELHEIGHT / 2 + HEIGHTTOLERANCE)
    {
-      assignDriveMotorsDControl(40, 40);
-      while (sizeFlag.height > MIDDLEFLAGPIXELHEIGHT)
+      assignDriveMotorsDControl(-40, -40);
+      while (flag.height < VISION_FOV_WIDTH / 2 - ANGLETOLERANCE)
       {
          if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
          {
             return;
          }
-         printf("%d\n", (int)sizeFlag.height);
-         sizeFlag = vision_get_by_sig(PORT_VISION, 0, sigNum);
+         printf("%d\n", (int)flag.height);
+         flag = getTopFlag(sigNum);
          delay(20);
       }
       assignDriveMotorsDControl(20, 20);
@@ -190,9 +248,8 @@ void flywheel(void *param)
          assignIndexerFree(currentFlywheelPower);
          knownRPM = false;
       }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT))
+      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT) || singleFire || doubleFire)
       {
-
          //rapid fire
          indexerDirection = 1;
          motor_move(PORT_INDEXER, -127);
@@ -210,17 +267,23 @@ void flywheel(void *param)
             delay(20);
          }
 
-         motor_move(PORT_FLYWHEEL, -50);
-         currentFlywheelGoalRPM = MIDDLEFLAGRPM;
-         currentFlywheelPower = MIDDLEFLAGPOWER;
-         currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-         delay(150);
-         motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         delay(1000);
+         if (!singleFire)
+         {
+            motor_move(PORT_FLYWHEEL, -50);
+            currentFlywheelGoalRPM = MIDDLEFLAGRPM;
+            currentFlywheelPower = MIDDLEFLAGPOWER;
+            currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
+            delay(150);
+            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
+            delay(1000);
+         }
+
          motor_move(PORT_INDEXER, currentFlywheelPower);
-         motor_move(PORT_INTAKE, 127);
          indexerDirection = 0;
          firstIter = true;
+
+         singleFire = false;
+         doubleFire = false;
       }
       else if (knownRPM)
       {
@@ -275,20 +338,6 @@ void intake(void *param)
 {
    while (true)
    {
-      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
-      {
-         if (intakeDirection != 1)
-         {
-            motor_move(PORT_INTAKE, 127);
-            intakeDirection = 1;
-         }
-         else
-         {
-            motor_move(PORT_INTAKE, 0);
-            intakeDirection = 0;
-         }
-         delay(250);
-      }
       if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN))
       {
          if (intakeDirection != -1)
