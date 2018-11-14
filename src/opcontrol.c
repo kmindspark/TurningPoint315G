@@ -67,23 +67,6 @@ vision_object_s_t getTopFlag(int sigNum)
    }
 }
 
-void newVisionAlign(int sigNum)
-{
-   turnToFlag(sigNum);
-   moveToFlag(sigNum);
-   turnToFlag(sigNum);
-   getTopFlag(sigNum);
-
-   if (numVisionObjects == 2)
-   {
-      doubleFire = true;
-   }
-   if (numVisionObjects == 1)
-   {
-      singleFire = true;
-   }
-}
-
 void turnToFlag(int sigNum)
 {
    vision_object_s_t flag = getTopFlag(sigNum);
@@ -170,6 +153,23 @@ void moveToFlag(int sigNum)
    assignDriveMotorsDControl(0, 0);
 }
 
+void newVisionAlign(int sigNum)
+{
+   turnToFlag(sigNum);
+   moveToFlag(sigNum);
+   turnToFlag(sigNum);
+   getTopFlag(sigNum);
+
+   if (numVisionObjects == 2)
+   {
+      doubleFire = true;
+   }
+   if (numVisionObjects == 1)
+   {
+      singleFire = true;
+   }
+}
+
 void drive(void *param)
 {
    while (true)
@@ -181,8 +181,7 @@ void drive(void *param)
          {
             sigNum = REDFLAGSIG;
          }
-         turnToFlag(sigNum);
-         moveDistToFlag(sigNum);
+         newVisionAlign(sigNum);
       }
 
       int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);

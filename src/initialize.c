@@ -16,10 +16,14 @@ void initializeDriveMotors()
    motor_set_gearing(PORT_DRIVERIGHTFRONT, E_MOTOR_GEARSET_18);
    motor_set_gearing(PORT_DRIVELEFTBACK, E_MOTOR_GEARSET_18);
    motor_set_gearing(PORT_DRIVERIGHTBACK, E_MOTOR_GEARSET_18);
+   motor_set_gearing(PORT_DRIVELEFTCENTER, E_MOTOR_GEARSET_18);
+   motor_set_gearing(PORT_DRIVERIGHTCENTER, E_MOTOR_GEARSET_18);
    motor_set_reversed(PORT_DRIVELEFTFRONT, false);
    motor_set_reversed(PORT_DRIVERIGHTFRONT, true);
    motor_set_reversed(PORT_DRIVELEFTBACK, false);
    motor_set_reversed(PORT_DRIVERIGHTBACK, true);
+   motor_set_reversed(PORT_DRIVELEFTCENTER, false);
+   motor_set_reversed(PORT_DRIVERIGHTCENTER, true);
 }
 
 void initializeFlywheelMotor()
@@ -28,12 +32,6 @@ void initializeFlywheelMotor()
    motor_set_gearing(PORT_INDEXER, E_MOTOR_GEARSET_36);
    motor_set_reversed(PORT_FLYWHEEL, true);
    motor_set_reversed(PORT_INDEXER, false);
-}
-
-void initializeIntakeMotor()
-{
-   motor_set_gearing(PORT_INTAKE, E_MOTOR_GEARSET_18);
-   motor_set_reversed(PORT_INTAKE, true);
 }
 
 static lv_res_t btnm_action(lv_obj_t *btnm, const char *txt)
