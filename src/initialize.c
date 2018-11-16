@@ -26,7 +26,7 @@ void initializeDriveMotors()
    motor_set_reversed(PORT_DRIVERIGHTCENTER, true);
 }
 
-void initializeFlywheelMotor()
+void initializeFlywheelMotors()
 {
    motor_set_gearing(PORT_FLYWHEEL, E_MOTOR_GEARSET_36);
    motor_set_gearing(PORT_INDEXER, E_MOTOR_GEARSET_36);
@@ -72,8 +72,7 @@ static lv_res_t btnm_action_color(lv_obj_t *btnm, const char *txt)
 void initialize()
 {
    initializeDriveMotors();
-   initializeFlywheelMotor();
-   initializeIntakeMotor();
+   initializeFlywheelMotors();
 }
 
 void disabled() {}

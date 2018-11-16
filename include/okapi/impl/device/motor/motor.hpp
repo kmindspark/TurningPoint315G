@@ -5,8 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-#ifndef _OKAPI_MOTOR_HPP_
-#define _OKAPI_MOTOR_HPP_
+#pragma once
 
 #include "api.h"
 #include "okapi/api/device/motor/abstractMotor.hpp"
@@ -88,13 +87,12 @@ class Motor : public AbstractMotor, public pros::Motor {
   virtual std::int32_t moveVelocity(std::int16_t ivelocity) const override;
 
   /**
-   * Sets the voltage for the motor from -127 to 127.
+   * Sets the voltage for the motor from -12000 to 12000.
    *
    * This function uses the following values of errno when an error state is reached:
    * EACCES - Another resource is currently trying to access the port.
    *
-   * @param iport The V5 port number from 1-21
-   * @param ivoltage The new voltage value from -127 to 127
+   * @param ivoltage The new voltage value from -12000 to 12000.
    * @return 1 if the operation was successful or PROS_ERR if the operation failed, setting errno.
    */
   virtual std::int32_t moveVoltage(std::int16_t ivoltage) const override;
@@ -167,8 +165,8 @@ class Motor : public AbstractMotor, public pros::Motor {
    * This function uses the following values of errno when an error state is reached:
    * EACCES - Another resource is currently trying to access the port.
    *
-   * @return The motor's actual velocity in motor_encoder_units_e_t per second or PROS_ERR_F if the
-   * operation failed, setting errno.
+   * @return The motor's actual velocity in RPM or PROS_ERR_F if the operation failed, setting
+   * errno.
    */
   virtual double getActualVelocity() const override;
 
@@ -556,5 +554,3 @@ okapi::Motor operator"" _mtr(unsigned long long iport);
 okapi::Motor operator"" _rmtr(unsigned long long iport);
 } // namespace literals
 } // namespace okapi
-
-#endif

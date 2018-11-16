@@ -5,7 +5,7 @@ void turnRight(int ticks, int power, bool reversed);
 
 #define TURNENCODERPRECISION 5
 #define MOVEENCODERPRECISION 7
-#define NUMDRIVEMOTORS 4
+#define NUMDRIVEMOTORS 6.0
 #define VELOCITYLIMIT 3
 
 int indexerDirectionAuton = 0;
@@ -21,23 +21,27 @@ void clearDriveMotors()
 {
    motor_tare_position(PORT_DRIVELEFTFRONT);
    motor_tare_position(PORT_DRIVELEFTBACK);
+   motor_tare_position(PORT_DRIVELEFTCENTER);
    motor_tare_position(PORT_DRIVERIGHTFRONT);
    motor_tare_position(PORT_DRIVERIGHTBACK);
+   motor_tare_position(PORT_DRIVERIGHTCENTER);
 }
 
 void assignDriveMotorsPower(int leftSide, int rightSide)
 {
    motor_move(PORT_DRIVELEFTFRONT, leftSide);
    motor_move(PORT_DRIVELEFTBACK, leftSide);
+   motor_move(PORT_DRIVELEFTCENTER, leftSide);
    motor_move(PORT_DRIVERIGHTFRONT, rightSide);
    motor_move(PORT_DRIVERIGHTBACK, rightSide);
+   motor_move(PORT_DRIVERIGHTCENTER, rightSide);
 }
 
 double averageVelocity()
 {
    return (abs(motor_get_actual_velocity(PORT_DRIVELEFTFRONT)) + abs(motor_get_actual_velocity(PORT_DRIVELEFTBACK)) +
            abs(motor_get_actual_velocity(PORT_DRIVERIGHTFRONT)) + abs(motor_get_actual_velocity(PORT_DRIVERIGHTBACK))) /
-          4.0;
+          NUMDRIVEMOTORS;
 }
 
 void assignDriveMotorsDist(int leftSide, int rightSide, int power, bool clear, bool turn)
@@ -46,6 +50,7 @@ void assignDriveMotorsDist(int leftSide, int rightSide, int power, bool clear, b
    {
       clearDriveMotors();
    }
+
    int currentPrecision = MOVEENCODERPRECISION;
    if (turn)
    {
@@ -54,10 +59,14 @@ void assignDriveMotorsDist(int leftSide, int rightSide, int power, bool clear, b
 
    motor_move_absolute(PORT_DRIVELEFTFRONT, leftSide, power);
    motor_move_absolute(PORT_DRIVELEFTBACK, leftSide, power);
+   motor_move_absolute(PORT_DRIVELEFTCENTER, leftSide, power);
    motor_move_absolute(PORT_DRIVERIGHTFRONT, rightSide, power);
    motor_move_absolute(PORT_DRIVERIGHTBACK, rightSide, power);
+   motor_move_absolute(PORT_DRIVERIGHTCENTER, rightSide, power);
+
    while (abs(motor_get_position(PORT_DRIVELEFTFRONT) - leftSide) + abs(motor_get_position(PORT_DRIVELEFTBACK) - leftSide) +
-              (abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide) + abs(motor_get_position(PORT_DRIVERIGHTBACK) - rightSide)) >
+              (abs(motor_get_position(PORT_DRIVERIGHTFRONT) - rightSide) + abs(motor_get_position(PORT_DRIVERIGHTBACK) - rightSide)) +
+              (abs(motor_get_position(PORT_DRIVELEFTCENTER - leftSide)) + abs(motor_get_position(PORT_DRIVERIGHTCENTER - rightSide))) >
           currentPrecision * NUMDRIVEMOTORS /* ||
           (turn && (averageVelocity() >= VELOCITYLIMIT))*/
    )
@@ -98,7 +107,8 @@ void forwardCoast(int ticks, int power)
    clearDriveMotors();
    assignDriveMotorsPower(power, power);
    while (abs(motor_get_position(PORT_DRIVELEFTFRONT)) + abs(motor_get_position(PORT_DRIVELEFTBACK)) +
-              abs(motor_get_position(PORT_DRIVERIGHTFRONT)) + abs(motor_get_position(PORT_DRIVERIGHTBACK)) <
+              abs(motor_get_position(PORT_DRIVERIGHTFRONT)) + abs(motor_get_position(PORT_DRIVERIGHTBACK)) +
+              abs(motor_get_position(PORT_DRIVELEFTCENTER)) + abs(motor_get_position(PORT_DRIVERIGHTCENTER)) <
           ticks * NUMDRIVEMOTORS)
    {
       delay(20);
@@ -111,7 +121,8 @@ void backwardCoast(int ticks, int power)
    clearDriveMotors();
    assignDriveMotorsPower(-power, -power);
    while (abs(motor_get_position(PORT_DRIVELEFTFRONT)) + abs(motor_get_position(PORT_DRIVELEFTBACK)) +
-              abs(motor_get_position(PORT_DRIVERIGHTFRONT)) + abs(motor_get_position(PORT_DRIVERIGHTBACK)) <
+              abs(motor_get_position(PORT_DRIVERIGHTFRONT)) + abs(motor_get_position(PORT_DRIVERIGHTBACK)) +
+              abs(motor_get_position(PORT_DRIVELEFTCENTER)) + abs(motor_get_position(PORT_DRIVERIGHTCENTER)) <
           ticks * NUMDRIVEMOTORS)
    {
       delay(20);
@@ -139,11 +150,6 @@ void backwardAbs(int ticks, int power)
    assignDriveMotorsDist(ticks, ticks, power, false, false);
 }
 
-void setIntakePower(int intakePower)
-{
-   motor_move(PORT_INTAKE, intakePower);
-}
-
 void setIndexerPower(int indexerPower)
 {
    motor_move(PORT_INDEXER, indexerPower);
@@ -157,15 +163,10 @@ void setIndexerPower(int indexerPower)
    }
 }
 
-void setCapLiftPower(int capPower)
-{
-   motor_move(PORT_CAPLIFT, capPower);
-}
-
 void autonFlywheel(void *param)
 {
    motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
-   motor_move(PORT_INDEXER, autonCurrentFlywheelPower);
+   motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
    while (true)
    {
       if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM + 15)
@@ -191,7 +192,6 @@ void autonFlywheel(void *param)
       if (rapidFire)
       {
          setIndexerPower(-127);
-         motor_move(PORT_INTAKE, 127);
          //rapid fire
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM - 8)
          {
@@ -203,7 +203,7 @@ void autonFlywheel(void *param)
          delay(150);
          motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
          delay(1000);
-         motor_move(PORT_INDEXER, autonCurrentFlywheelPower);
+         motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
 
          rapidFire = false;
       }
@@ -248,7 +248,6 @@ void displayInfoAuton(void *param)
 
 void flagAutonFront(bool park, bool redAlliance)
 {
-   setCapLiftPower(-10);
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
    setFlywheelSpeed(FRONTTILEPOWER, FRONTTILERPM);
 
@@ -285,8 +284,6 @@ void flagAutonFront(bool park, bool redAlliance)
 
 void flagAutonBackOld(bool park, bool redAlliance)
 {
-
-   setCapLiftPower(-10);
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
    setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
 
@@ -317,8 +314,6 @@ void flagAutonBackOld(bool park, bool redAlliance)
 
 void flagAutonBack(bool park, bool redAlliance)
 {
-
-   setCapLiftPower(-10);
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
    setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
 
@@ -328,7 +323,6 @@ void flagAutonBack(bool park, bool redAlliance)
 
    turnLeft(RIGHTANGLETURN - (RIGHTANGLETURN / 3) + 40, 100, redAlliance);
 
-   setIntakePower(127);
    forward(2700, 140);
 
    delay(300);
@@ -351,11 +345,9 @@ void flagAutonBack(bool park, bool redAlliance)
 
 void fullAutonFrontOldPath(bool park, bool redAlliance)
 {
-   setCapLiftPower(-10);
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
    setFlywheelSpeed(HIGHFLAGPOWER, HIGHFLAGRPM);
 
-   setIntakePower(-127);
    forwardCoast(800, 127);
    forwardCoast(1000, 50);
    forwardCoast(600, 100);
@@ -366,7 +358,6 @@ void fullAutonFrontOldPath(bool park, bool redAlliance)
 
    forwardCoast(200, 70);
    forwardCoast(1800, 127);
-   setIntakePower(127);
    forward(400, 120);
    assignDriveMotorsPower(0, 0);
 
@@ -411,18 +402,15 @@ void fullAutonFrontOldPath(bool park, bool redAlliance)
    else
    {
       delay(1000);
-      setIntakePower(0);
    }
 }
 
 void fullAutonFront(bool park, bool redAlliance)
 {
-   setCapLiftPower(-10);
    //setFlywheelSpeed(FRONTTILEPOWER, FRONTTILERPM);
    setFlywheelSpeed(HIGHFLAGPOWER, HIGHFLAGRPM);
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
 
-   setIntakePower(127);
    forwardCoast(200, 40);
    forwardCoast(2600, 110);
    //forward(600, 90);
@@ -474,7 +462,6 @@ void fullAutonFront(bool park, bool redAlliance)
       backward(2000, 150);
       delay(150);
       turnLeft(RIGHTANGLETURN + 70, 100, redAlliance);
-      setIntakePower(-127);
       //assignDriveMotorsPower(-127, -127);
       //delay(400);
       assignDriveMotorsPower(0, 0);
@@ -496,7 +483,6 @@ void fullAutonFront(bool park, bool redAlliance)
    else
    {
       delay(1000);
-      setIntakePower(0);
    }
 }
 

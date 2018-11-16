@@ -5,8 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-#ifndef _OKAPI_XDRIVEMODEL_HPP_
-#define _OKAPI_XDRIVEMODEL_HPP_
+#pragma once
 
 #include "okapi/api/chassis/model/chassisModel.hpp"
 #include "okapi/api/device/motor/abstractMotor.hpp"
@@ -17,7 +16,7 @@ class XDriveModel : public ChassisModel {
   public:
   /**
    * Model for an x drive (wheels at 45 deg from a skid steer drive). When all motors are powered
-   * +127, the robot should move forward in a straight line.
+   * +100%, the robot should move forward in a straight line.
    *
    * This constructor infers the two sensors from the top left and top right motors (using the
    * integrated encoders).
@@ -27,16 +26,16 @@ class XDriveModel : public ChassisModel {
    * @param ibottomRightMotor bottom right motor
    * @param ibottomLeftMotor bottom left motor
    */
-  XDriveModel(std::shared_ptr<AbstractMotor> itopLeftMotor,
-              std::shared_ptr<AbstractMotor> itopRightMotor,
-              std::shared_ptr<AbstractMotor> ibottomRightMotor,
-              std::shared_ptr<AbstractMotor> ibottomLeftMotor,
-              double imaxVelocity = 127,
+  XDriveModel(const std::shared_ptr<AbstractMotor> &itopLeftMotor,
+              const std::shared_ptr<AbstractMotor> &itopRightMotor,
+              const std::shared_ptr<AbstractMotor> &ibottomRightMotor,
+              const std::shared_ptr<AbstractMotor> &ibottomLeftMotor,
+              double imaxVelocity,
               double imaxVoltage = 12000);
 
   /**
    * Model for an x drive (wheels at 45 deg from a skid steer drive). When all motors are powered
-   * +127, the robot should move forward in a straight line.
+   * +100%, the robot should move forward in a straight line.
    *
    * @param itopLeftMotor top left motor
    * @param itopRightMotor top right motor
@@ -45,13 +44,13 @@ class XDriveModel : public ChassisModel {
    * @param ileftEnc Left side encoder
    * @param irightEnc Right side encoder
    */
-  XDriveModel(std::shared_ptr<AbstractMotor> itopLeftMotor,
-              std::shared_ptr<AbstractMotor> itopRightMotor,
-              std::shared_ptr<AbstractMotor> ibottomRightMotor,
-              std::shared_ptr<AbstractMotor> ibottomLeftMotor,
-              std::shared_ptr<ContinuousRotarySensor> ileftEnc,
-              std::shared_ptr<ContinuousRotarySensor> irightEnc,
-              double imaxVelocity = 127,
+  XDriveModel(const std::shared_ptr<AbstractMotor> &itopLeftMotor,
+              const std::shared_ptr<AbstractMotor> &itopRightMotor,
+              const std::shared_ptr<AbstractMotor> &ibottomRightMotor,
+              const std::shared_ptr<AbstractMotor> &ibottomLeftMotor,
+              const std::shared_ptr<ContinuousRotarySensor> &ileftEnc,
+              const std::shared_ptr<ContinuousRotarySensor> &irightEnc,
+              double imaxVelocity,
               double imaxVoltage = 12000);
 
   /**
@@ -261,9 +260,5 @@ class XDriveModel : public ChassisModel {
   std::shared_ptr<AbstractMotor> bottomLeftMotor;
   std::shared_ptr<ContinuousRotarySensor> leftSensor;
   std::shared_ptr<ContinuousRotarySensor> rightSensor;
-  const double maxVelocity;
-  const double maxVoltage;
 };
 } // namespace okapi
-
-#endif

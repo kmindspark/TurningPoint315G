@@ -5,8 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-#ifndef _OKAPI_CHASSISMODEL_HPP_
-#define _OKAPI_CHASSISMODEL_HPP_
+#pragma once
 
 #include "okapi/api/chassis/model/readOnlyChassisModel.hpp"
 #include "okapi/api/device/motor/abstractMotor.hpp"
@@ -23,7 +22,7 @@ namespace okapi {
  */
 class ChassisModel : public ReadOnlyChassisModel {
   public:
-  ChassisModel() = default;
+  ChassisModel(double imaxVelocity, double imaxVoltage = 12000);
   ChassisModel(const ChassisModel &) = delete;
   ChassisModel &operator=(const ChassisModel &) = delete;
 
@@ -176,7 +175,23 @@ class ChassisModel : public ReadOnlyChassisModel {
                              double ilimit,
                              double ithreshold,
                              double iloopSpeed) const = 0;
+
+  /**
+   * Sets a new maximum velocity in RPM [0-600].
+   *
+   * @param imaxVelocity the new maximum velocity
+   */
+  virtual void setMaxVelocity(double imaxVelocity);
+
+  /**
+   * Sets a new maximum voltage in mV [0-12000].
+   *
+   * @param imaxVoltage the new maximum voltage
+   */
+  virtual void setMaxVoltage(double imaxVoltage);
+
+  protected:
+  double maxVelocity;
+  double maxVoltage;
 };
 } // namespace okapi
-
-#endif

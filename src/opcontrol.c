@@ -26,8 +26,10 @@ void assignDriveMotorsDControl(int leftSide, int rightSide)
 {
    motor_move(PORT_DRIVELEFTFRONT, leftSide);
    motor_move(PORT_DRIVELEFTBACK, leftSide);
+   motor_move(PORT_DRIVELEFTCENTER, leftSide);
    motor_move(PORT_DRIVERIGHTFRONT, rightSide);
    motor_move(PORT_DRIVERIGHTBACK, rightSide);
+   motor_move(PORT_DRIVERIGHTCENTER, rightSide);
 }
 
 bool anyButtonPressed()
@@ -41,7 +43,8 @@ bool anyButtonPressed()
 vision_object_s_t getTopFlag(int sigNum)
 {
    vision_object_s_t object_arr[NUM_VISION_OBJECTS];
-   vision_read_by_sig(PORT_VISION, 0, sigNum, NUM_VISION_OBJECTS, object_arr);
+   vision_color_code_t curCode = vision_create_color_code(PORT_VISION, VISIONTARGETSIG, sigNum, 0, 0, 0);
+   vision_read_by_code(PORT_VISION, 0, curCode, NUM_VISION_OBJECTS, object_arr);
 
    numVisionObjects = sizeof(object_arr) / sizeof(object_arr[0]);
 
@@ -216,8 +219,8 @@ void flywheel(void *param)
          currentFlywheelGoalRPM = HIGHFLAGRPM;
          currentAssignedFlywheelPower = HIGHFLAGPOWER;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         delay(1000);
-         assignIndexerFree(currentFlywheelPower);
+         delay(100);
+         assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
          knownRPM = true;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A))
@@ -226,7 +229,7 @@ void flywheel(void *param)
          currentFlywheelGoalRPM = MIDDLEFLAGRPM;
          currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         assignIndexerFree(currentFlywheelPower);
+         assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
          knownRPM = true;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
@@ -235,7 +238,7 @@ void flywheel(void *param)
          currentFlywheelGoalRPM = BETWEEENFLAGRPM;
          currentAssignedFlywheelPower = BETWEENFLAGPOWER;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         assignIndexerFree(currentFlywheelPower);
+         assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
          knownRPM = true;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B))
@@ -244,7 +247,7 @@ void flywheel(void *param)
          currentFlywheelGoalRPM = 0;
          currentAssignedFlywheelPower = 0;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         assignIndexerFree(currentFlywheelPower);
+         assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
          knownRPM = false;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT) || singleFire || doubleFire)
@@ -277,7 +280,7 @@ void flywheel(void *param)
             delay(1000);
          }
 
-         motor_move(PORT_INDEXER, currentFlywheelPower);
+         motor_move(PORT_INDEXER, currentFlywheelPower + FRICTIONPOWER);
          indexerDirection = 0;
          firstIter = true;
 
@@ -301,7 +304,7 @@ void flywheel(void *param)
             if (!(anyButtonPressed()))
             {
                motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-               assignIndexerFree(currentFlywheelPower);
+               assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
                currentAssignedFlywheelPower = currentFlywheelPower;
                delay(1000);
             }
@@ -310,7 +313,7 @@ void flywheel(void *param)
          {
             currentAssignedFlywheelPower = 127;
             motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
-            assignIndexerFree(currentAssignedFlywheelPower);
+            assignIndexerFree(currentAssignedFlywheelPower + FRICTIONPOWER);
             while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM)
             {
                if (anyButtonPressed())
@@ -323,33 +326,11 @@ void flywheel(void *param)
             {
                delay(350);
                motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-               assignIndexerFree(currentFlywheelPower);
+               assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
                currentAssignedFlywheelPower = currentFlywheelPower;
                delay(1000);
             }
          }
-      }
-      delay(20);
-   }
-}
-
-void intake(void *param)
-{
-   while (true)
-   {
-      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN))
-      {
-         if (intakeDirection != -1)
-         {
-            motor_move(PORT_INTAKE, -127);
-            intakeDirection = -1;
-         }
-         else
-         {
-            motor_move(PORT_INTAKE, 0);
-            intakeDirection = 0;
-         }
-         delay(250);
       }
       delay(20);
    }
@@ -372,33 +353,6 @@ void indexer(void *param)
          motor_move(PORT_INDEXER, max(currentAssignedFlywheelPower, 0));
          motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
          indexerDirection = 0;
-      }
-      delay(20);
-   }
-}
-
-void capLift(void *param)
-{
-   motor_move(PORT_CAPLIFT, -127);
-   delay(200);
-   motor_move(PORT_CAPLIFT, -20);
-   while (true)
-   {
-      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1))
-      {
-         motor_move(PORT_CAPLIFT, 127);
-         while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1))
-         {
-         }
-         motor_move(PORT_CAPLIFT, 12);
-      }
-      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2))
-      {
-         motor_move(PORT_CAPLIFT, -127);
-         while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2))
-         {
-         }
-         motor_move(PORT_CAPLIFT, -10);
       }
       delay(20);
    }
@@ -442,9 +396,7 @@ void opcontrol()
    //delay(500);
    task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
    task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
-   task_t intakeTask = task_create(intake, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Intake Task");
    task_t indexerTask = task_create(indexer, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Indexer Task");
-   task_t capLiftTask = task_create(capLift, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Cap Lift Task");
    task_t displayInfoTask = task_create(displayInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Info Task");
 
    //lvglInfo();
