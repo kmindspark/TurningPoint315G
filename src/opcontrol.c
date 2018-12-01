@@ -194,6 +194,8 @@ void drive(void *param)
       motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
       motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward + turn)));
       motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward - turn)));
+      motor_move(PORT_DRIVELEFTCENTER, max(-127, min(127, forward + turn)));
+      motor_move(PORT_DRIVERIGHTCENTER, max(-127, min(127, forward - turn)));
 
       delay(20);
    }
