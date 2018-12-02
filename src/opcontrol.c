@@ -273,7 +273,7 @@ void flywheel(void *param)
 
          if (!singleFire)
          {
-            motor_move(PORT_FLYWHEEL, -50);
+            motor_move(PORT_FLYWHEEL, -95);
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
             currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
@@ -311,7 +311,7 @@ void flywheel(void *param)
                delay(1000);
             }
          }
-         if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM - 6)
+         if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM -)
          {
             currentAssignedFlywheelPower = 127;
             motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
@@ -332,6 +332,12 @@ void flywheel(void *param)
                currentAssignedFlywheelPower = currentFlywheelPower;
                delay(1000);
             }
+         }
+         else if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM - 4)
+         {
+            assignIndexerFree(-127);
+            delay(500);
+            assignIndexerFree(currentAssignedFlywheelPower);
          }
       }
       delay(20);
@@ -376,7 +382,7 @@ void displayInfo(void *param)
       sprintf(tempString2, "Current Flywheel RPM: %d", abs(motor_get_actual_velocity(PORT_FLYWHEEL)));
       sprintf(tempString3, "Goal RPM: %d", currentFlywheelGoalRPM);
       sprintf(tempString4, "Cur Power: %d", currentAssignedFlywheelPower);
-      sprintf(tempString5, "Ind dir: %d", indexerDirection);
+      sprintf(tempString5, "Ind RPM: %d", abs(motor_get_actual_velocity(PORT_INDEXER)));
       sprintf(tempString6, "Battery Voltage: %d", battery_get_voltage());
 
       lcd_set_text(1, tempString1);

@@ -197,7 +197,7 @@ void autonFlywheel(void *param)
          {
             delay(20);
          }
-         motor_move(PORT_FLYWHEEL, -50);
+         motor_move(PORT_FLYWHEEL, -95);
          autonCurrentFlywheelGoalRPM = MIDDLEFLAGRPM;
          autonCurrentFlywheelPower = MIDDLEFLAGPOWER;
          delay(150);
