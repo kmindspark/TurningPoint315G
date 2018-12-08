@@ -181,7 +181,7 @@ void autonFlywheel(void *param)
       if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < autonCurrentFlywheelGoalRPM - 6)
       {
          motor_move(PORT_FLYWHEEL, 127);
-         setIndexerPower(127);
+         setIndexerPower(100);
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < autonCurrentFlywheelGoalRPM)
          {
             delay(20);
@@ -191,16 +191,16 @@ void autonFlywheel(void *param)
       }
       if (rapidFire)
       {
-         setIndexerPower(-127);
+         setIndexerPower(-110);
          //rapid fire
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM - 8)
          {
             delay(20);
          }
-         motor_move(PORT_FLYWHEEL, -95);
+         motor_move(PORT_FLYWHEEL, -120);
          autonCurrentFlywheelGoalRPM = MIDDLEFLAGRPM;
          autonCurrentFlywheelPower = MIDDLEFLAGPOWER;
-         delay(150);
+         delay(200);
          motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
          delay(1000);
          motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
