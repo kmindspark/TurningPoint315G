@@ -256,9 +256,8 @@ void flywheel(void *param)
       {
          //rapid fire
          indexerDirection = 1;
-         motor_move(PORT_INDEXER, -100);
+         motor_move(PORT_INDEXER, -100); //100
          motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
-         delay(100);
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM - 8)
          {
             if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
@@ -273,11 +272,11 @@ void flywheel(void *param)
 
          if (!singleFire)
          {
-            motor_move(PORT_FLYWHEEL, -120);
+            motor_move(PORT_FLYWHEEL, -127);
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
             currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-            delay(200);
+            delay(190); //185
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             delay(1000);
          }
@@ -333,14 +332,14 @@ void flywheel(void *param)
                delay(1000);
             }
          }
-         else if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 12 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 65 && indexerDirection != 1)
+         else if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 4 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 0 && indexerDirection != 1)
          {
             delay(250);
-            if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 12 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 65 && indexerDirection != 1)
+            if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 4 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 0 /*65*/ && indexerDirection != 1)
             {
                motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
                assignIndexerFree(-127);
-               delay(200);
+               delay(190);
                assignIndexerFree(currentAssignedFlywheelPower + FRICTIONPOWER);
                motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
                delay(500);
