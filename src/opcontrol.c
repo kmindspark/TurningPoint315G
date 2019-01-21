@@ -332,22 +332,19 @@ void flywheel(void *param)
                delay(1000);
             }
          }
-         else if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 3 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 0 && indexerDirection != 1)
+         else if (adi_digital_read(LIMITSWITCHPORT))
          {
-            delay(250);
-            if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 3 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 0 /*65*/ && indexerDirection != 1)
+            delay(200);
+            motor_move(PORT_INDEXER, -127);
+            while (adi_digital_read(LIMITSWITCHPORT))
             {
-               motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
-               assignIndexerFree(-127);
-               delay(190);
-               assignIndexerFree(currentAssignedFlywheelPower + FRICTIONPOWER);
-               motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
-               delay(500);
             }
+            assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
          }
       }
-      delay(20);
    }
+   delay(20);
+}
 }
 
 void indexer(void *param)
