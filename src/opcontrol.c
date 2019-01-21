@@ -256,7 +256,7 @@ void flywheel(void *param)
       {
          //rapid fire
          indexerDirection = 1;
-         motor_move(PORT_INDEXER, -100); //100
+         motor_move(PORT_INDEXER, -127); //100
          motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM - 8)
          {
@@ -272,11 +272,11 @@ void flywheel(void *param)
 
          if (!singleFire)
          {
-            motor_move(PORT_FLYWHEEL, -127);
+            motor_move(PORT_FLYWHEEL, -45); //30
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
             currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-            delay(190); //185
+            delay(180); //185
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             delay(1000);
          }
@@ -332,10 +332,10 @@ void flywheel(void *param)
                delay(1000);
             }
          }
-         else if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 4 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 0 && indexerDirection != 1)
+         else if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 3 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 0 && indexerDirection != 1)
          {
             delay(250);
-            if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 4 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 0 /*65*/ && indexerDirection != 1)
+            if (abs(motor_get_actual_velocity(PORT_INDEXER)) < currentFlywheelGoalRPM - 3 && abs(motor_get_actual_velocity(PORT_INDEXER)) > 0 /*65*/ && indexerDirection != 1)
             {
                motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
                assignIndexerFree(-127);

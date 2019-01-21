@@ -12,14 +12,16 @@
 #define HIGHFLAGPOWER 122 //125
 #define HIGHFLAGRPM 102
 #define MIDDLEFLAGPOWER 71 //77
-#define MIDDLEFLAGRPM 65
+#define MIDDLEFLAGRPM 62
 #define BETWEENFLAGPOWER 103
 #define BETWEEENFLAGRPM 90
 
 #define FRONTTILEPOWER 98
 #define FRONTTILERPM 75
-#define BACKTILEPOWER 115
-#define BACKTILERPM 98
+#define BACKTILEPOWER 100
+#define BACKTILERPM 90
+
+#define LIMITSWITCHPORT 1
 
 #define OVERRIDETEMP true
 #define MAXALLOWEDTEMP 45
@@ -38,7 +40,7 @@
 #define EXTRAPOWER 10
 #define FRICTIONPOWER 0
 
-#define DIFFBRAKE 10
+#define DIFFBRAKE 2
 
 extern int autonNumber;
 extern bool redAlliance;

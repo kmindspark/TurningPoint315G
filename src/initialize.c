@@ -73,6 +73,7 @@ void initialize()
 {
    initializeDriveMotors();
    initializeFlywheelMotors();
+   adi_port_set_config(LIMITSWITCHPORT, E_ADI_DIGITAL_IN);
 }
 
 void disabled() {}
