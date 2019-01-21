@@ -345,7 +345,6 @@ void flywheel(void *param)
    }
    delay(20);
 }
-}
 
 void indexer(void *param)
 {
