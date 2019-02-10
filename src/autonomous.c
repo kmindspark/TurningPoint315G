@@ -200,10 +200,10 @@ void autonFlywheel(void *param)
          {
             delay(20);
          }
-         motor_move(PORT_FLYWHEEL, -45);
+         motor_move(PORT_FLYWHEEL, 0); //-3);
          autonCurrentFlywheelGoalRPM = MIDDLEFLAGRPM;
          autonCurrentFlywheelPower = MIDDLEFLAGPOWER;
-         delay(180);
+         delay(100);
          motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
          delay(1000);
          motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
@@ -420,26 +420,28 @@ void fullAutonFront(bool park, bool redAlliance)
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
 
    forwardCoast(200, 40);
-   forwardCoast(1750, 110);
-   delay(500);
+   forwardCoast(2050, 127); //1750
+   delay(000);
    //forward(600, 90);
    assignDriveMotorsPower(-15 - DIFFBRAKE, -15);
    //assignDriveMotorsPower(-30, -30);
-   delay(200);
+   delay(400);
    //turnLeft(60, 200, redAlliance);
    backwardCoast(2600, 127);
    assignDriveMotorsPower(-80, -80);
-   delay(600);
+   delay(300);
+   assignDriveMotorsPower(-40, -40);
+   delay(300);
    assignDriveMotorsPower(0, 0);
 
-   forwardCoast(180, 50);                       //200, 230, 150
+   forwardCoast(300, 50);                       //180, 200, 230, 150
    turnRight(RIGHTANGLETURN, 100, redAlliance); //added 12 here
    setIndexerPower(-127);
    delay(190);
    setIndexerPower(HIGHFLAGPOWER);
    forwardCoast(500, 100);
    assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
-   delay(200);
+   delay(100);
    //backward(200, 50);
 
    /*while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < HIGHFLAGRPM)
@@ -460,23 +462,24 @@ void fullAutonFront(bool park, bool redAlliance)
    forwardCoast(1400, 127);
    forwardCoast(550, 90);
 
-   task_suspend(flywheelTask);
-   task_delete(flywheelTask);
-   motor_move(PORT_FLYWHEEL, 0);
+   //WAS UNCOMMENTED
+   //task_suspend(flywheelTask);
+   //task_delete(flywheelTask);
+   //motor_move(PORT_FLYWHEEL, 0);
 
    //backwardCoast(500, 127);
    assignDriveMotorsPower(-15 - DIFFBRAKE, -15);
    delay(500);
-   backward(1100, 150); //2000
+   backward(1130, 150); //2000
    delay(150);
    turnLeft(RIGHTANGLETURN, 100, redAlliance); //+30 +70
    //assignDriveMotorsPower(-127, -127);
    //delay(400);
    assignDriveMotorsPower(0, 0);
    setIndexerPower(-127);
-   forwardCoast(1400, 60);
-   setIndexerPower(0);
-   forward(1130, 120); //1200
+   forwardCoast(1900, 60);
+   setIndexerPower(-60);
+   forward(530, 120); //1200
    setIndexerPower(0);
 
    if (park)
@@ -495,6 +498,8 @@ void fullAutonFront(bool park, bool redAlliance)
    }
    else
    {
+
+      backward(300, 100);
       delay(1000);
    }
 }
@@ -506,21 +511,15 @@ void autonomous()
    switch (autonNumber)
    {
    case 1:
-      flagAutonFront(true, redAlliance);
-      break;
-   case 2:
-      flagAutonFront(false, redAlliance);
-      break;
-   case 3:
       flagAutonBack(true, redAlliance);
       break;
-   case 4:
+   case 2:
       flagAutonBack(false, redAlliance);
       break;
-   case 5:
+   case 3:
       fullAutonFront(true, redAlliance);
       break;
-   case 6:
+   case 4:
       fullAutonFront(false, redAlliance);
       break;
    }

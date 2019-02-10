@@ -5,9 +5,9 @@ bool redAlliance = false;
 
 #define NUMAUTONS 6
 
-static const char *btnm_map[] = {"LF&HF&P F", "LF&HF F", "HF&P B", "HF B", "\n",
-                                 "C&LF&MF&HF&P F", "C&LF&MF&HF F", ""};
-static const char *auton_strings[] = {"LF&HF&P F", "LF&HF F", "HF&P B", "HF B", "C&LF&MF&HF&P F", "C&LF&MF&HF F"};
+static const char *btnm_map[] = {"Back w/P", "Back w/o P", "\n",
+                                 "Main Front w/P", "Main Front w/o P", ""};
+static const char *auton_strings[] = {"Back w/P", "Back w/o P", "Main Front w/P", "Main Front w/o P"};
 static const char *alliance_map[] = {"Red", "Blue", ""};
 
 void initializeDriveMotors()
@@ -61,7 +61,7 @@ static lv_res_t btnm_action_color(lv_obj_t *btnm, const char *txt)
    {
       redAlliance = true;
    }
-   else if (strcmp(txt, "Blue") == 1)
+   else if (strcmp(txt, "Blue") == 0)
    {
       redAlliance = false;
    }
@@ -80,7 +80,7 @@ void disabled() {}
 
 void competition_initialize()
 {
-   lv_theme_alien_init(40, NULL);
+   lv_theme_alien_init(190, NULL);
 
    lv_obj_t *title = lv_label_create(lv_scr_act(), NULL);
    lv_label_set_text(title, "Auton Selection");
