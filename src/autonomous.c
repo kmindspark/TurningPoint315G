@@ -324,6 +324,8 @@ void flagAutonBack(bool park, bool redAlliance)
    setIndexerPower(-127);
    setFlywheelSpeed(BACKTILEPOWER + EXTRAPOWER, BACKTILERPM);
    delay(1500);
+   setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
+   setIndexerPower(BACKTILEPOWER);
 
    turnLeft(RIGHTANGLETURN - (RIGHTANGLETURN / 3) + 0, 100, redAlliance); //+40
    assignDriveMotorsPower(-80, -80);

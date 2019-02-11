@@ -359,7 +359,7 @@ void flywheel(void *param)
             delay(100);
             if (adi_digital_read(LIMITSWITCHPORT) == 1)
             {
-               motor_move(PORT_INDEXER, -100);
+               motor_move(PORT_INDEXER, -110); //100
                motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
                /*while (adi_digital_read(LIMITSWITCHPORT) == 1)
                {
