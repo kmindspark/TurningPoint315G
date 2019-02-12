@@ -299,7 +299,7 @@ void fullAutonFront(bool park, bool redAlliance)
    forwardCoast(550, 90);
 
    //Drive back and align with cap
-   assignDriveMotorsPower(-15 - DIFFBRAKE, -15);
+   assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
    delay(500);
    backward(1130, 150);
    delay(150);
