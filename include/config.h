@@ -42,5 +42,9 @@
 
 #define DIFFBRAKE 5
 
+#define KP 0.5
+#define KI 0.01
+#define INTEGRALLIMIT 4
+
 extern int autonNumber;
 extern bool redAlliance;

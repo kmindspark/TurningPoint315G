@@ -233,6 +233,7 @@ void assignIndexerFree(int power)
 void flywheel(void *param)
 {
    bool firstIter = true;
+   double integral = 0;
    while (true)
    {
       if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) || firstIter)
@@ -242,9 +243,9 @@ void flywheel(void *param)
          currentFlywheelGoalRPM = HIGHFLAGRPM;
          currentAssignedFlywheelPower = HIGHFLAGPOWER;
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         delay(100);
          assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
          knownRPM = true;
+         integral = 0;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A))
       {
@@ -254,6 +255,7 @@ void flywheel(void *param)
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
          assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
          knownRPM = true;
+         integral = 0;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
       {
@@ -263,6 +265,7 @@ void flywheel(void *param)
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
          assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
          knownRPM = true;
+         integral = 0;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B))
       {
@@ -272,6 +275,7 @@ void flywheel(void *param)
          motor_move(PORT_FLYWHEEL, currentFlywheelPower);
          assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
          knownRPM = false;
+         integral = 0;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT) || singleFire || doubleFire)
       {
@@ -279,7 +283,8 @@ void flywheel(void *param)
          armed = 0;
          indexerDirection = 1;
          motor_move(PORT_INDEXER, -127); //100
-         motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
+         motor_move(PORT_FLYWHEEL, currentFlywheelPower + EXTRAPOWER);
+
          while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM - 8)
          {
             if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
@@ -294,11 +299,11 @@ void flywheel(void *param)
 
          if (!singleFire)
          {
-            motor_move(PORT_FLYWHEEL, -3); //30
+            motor_move(PORT_FLYWHEEL, -3);
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
             currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-            delay(110); //100, 180, 185
+            delay(110);
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             delay(1000);
          }
@@ -310,77 +315,27 @@ void flywheel(void *param)
          singleFire = false;
          doubleFire = false;
       }
-      else if (knownRPM)
+      if (knownRPM)
       {
-         if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 15)
-         {
-            currentAssignedFlywheelPower = -1;
-            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
-            while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 5)
-            {
-               if (anyButtonPressed())
-               {
-                  break;
-               }
-               delay(20);
-            }
-            if (!(anyButtonPressed()))
-            {
-               motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-               assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
-               currentAssignedFlywheelPower = currentFlywheelPower;
-               delay(1000);
-            }
-         }
-         if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM - 8)
-         {
-            currentAssignedFlywheelPower = 127;
-            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
-            assignIndexerFree(currentAssignedFlywheelPower + FRICTIONPOWER);
-            while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < currentFlywheelGoalRPM)
-            {
-               if (anyButtonPressed())
-               {
-                  break;
-               }
-               delay(20);
-            }
-            if (!anyButtonPressed())
-            {
-               delay(350);
-               motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-               assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
-               currentAssignedFlywheelPower = currentFlywheelPower;
-               delay(1000);
-            }
-         }
-         else if (adi_digital_read(LIMITSWITCHPORT) == 1 && armed != 2)
-         {
-            delay(50);
-            if (adi_digital_read(LIMITSWITCHPORT) == 1)
-            {
-               //motor_move(PORT_INDEXER, -110); //100
-               motor_move_relative(PORT_INDEXER, -440, 90);
-               motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
-               /*while (adi_digital_read(LIMITSWITCHPORT) == 1)
-               {
-                  delay(10);
-               }*/
-               delay(250);
-               assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
-               delay(500);
+         // PID LOOP
+         int difference = currentFlywheelGoalRPM - abs(motor_get_actual_velocity(PORT_FLYWHEEL));
 
-               armed += 1;
-            }
-         }
-         else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN))
+         double proportional = KP * difference;
+         integral = integral + KI * difference;
+
+         if (integral > INTEGRALLIMIT)
          {
-            armed = 0;
+            integral = INTEGRALLIMIT;
          }
-         else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
+         else if (integral < -INTEGRALLIMIT)
          {
-            armed = 1;
+            integral = -INTEGRALLIMIT;
          }
+
+         currentAssignedFlywheelPower = currentFlywheelPower + (int)proportional + (int)integral;
+
+         motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
+         assignIndexerFree(currentAssignedFlywheelPower + FRICTIONPOWER);
       }
       delay(20);
    }
@@ -408,6 +363,28 @@ void indexer(void *param)
          {
             armed -= 1;
          }
+      }
+      if (adi_digital_read(LIMITSWITCHPORT) == 1 && armed != 2)
+      {
+         delay(50);
+         if (adi_digital_read(LIMITSWITCHPORT) == 1)
+         {
+            indexerDirection = 1;
+            motor_move_relative(PORT_INDEXER, -440, 90);
+            delay(250);
+            indexerDirection = 0;
+            assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
+
+            armed += 1;
+         }
+      }
+      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN))
+      {
+         armed = 0;
+      }
+      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
+      {
+         armed = 1;
       }
       delay(20);
    }
