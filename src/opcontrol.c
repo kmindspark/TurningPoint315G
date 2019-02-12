@@ -298,7 +298,7 @@ void flywheel(void *param)
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
             currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-            delay(100); //180, 185
+            delay(110); //100, 180, 185
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             delay(1000);
          }
@@ -314,7 +314,7 @@ void flywheel(void *param)
       {
          if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 15)
          {
-            currentAssignedFlywheelPower = -15;
+            currentAssignedFlywheelPower = -1;
             motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
             while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM + 5)
             {
@@ -356,16 +356,17 @@ void flywheel(void *param)
          }
          else if (adi_digital_read(LIMITSWITCHPORT) == 1 && armed != 2)
          {
-            delay(100);
+            delay(50);
             if (adi_digital_read(LIMITSWITCHPORT) == 1)
             {
-               motor_move(PORT_INDEXER, -110); //100
+               //motor_move(PORT_INDEXER, -110); //100
+               motor_move_relative(PORT_INDEXER, -440, 90);
                motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
                /*while (adi_digital_read(LIMITSWITCHPORT) == 1)
                {
                   delay(10);
                }*/
-               delay(240);
+               delay(250);
                assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
                delay(500);
 
@@ -375,6 +376,10 @@ void flywheel(void *param)
          else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN))
          {
             armed = 0;
+         }
+         else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
+         {
+            armed = 1;
          }
       }
       delay(20);
