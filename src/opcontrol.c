@@ -280,7 +280,6 @@ void flywheel(void *param)
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT) || singleFire || doubleFire)
       {
          //rapid fire
-         armed = 0;
          indexerDirection = 1;
          motor_move(PORT_INDEXER, -127); //100
          motor_move(PORT_FLYWHEEL, currentFlywheelPower + EXTRAPOWER);
@@ -294,6 +293,23 @@ void flywheel(void *param)
             {
                break;
             }
+            int difference = currentFlywheelGoalRPM - abs(motor_get_actual_velocity(PORT_FLYWHEEL));
+
+            double proportional = KP * difference;
+            integral = integral + KI * difference;
+
+            if (integral > INTEGRALLIMIT)
+            {
+               integral = INTEGRALLIMIT;
+            }
+            else if (integral < -INTEGRALLIMIT)
+            {
+               integral = -INTEGRALLIMIT;
+            }
+
+            currentAssignedFlywheelPower = currentFlywheelPower + EXTRAPOWER + (int)proportional + (int)integral;
+
+            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
             delay(20);
          }
 
@@ -303,7 +319,7 @@ void flywheel(void *param)
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
             currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-            delay(110);
+            delay(130);
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             delay(1000);
          }
@@ -314,6 +330,8 @@ void flywheel(void *param)
 
          singleFire = false;
          doubleFire = false;
+
+         armed = 0;
       }
       if (knownRPM)
       {
@@ -371,7 +389,7 @@ void indexer(void *param)
          {
             indexerDirection = 1;
             motor_move_relative(PORT_INDEXER, -440, 90);
-            delay(250);
+            delay(300);
             indexerDirection = 0;
             assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
 
@@ -406,7 +424,7 @@ void displayInfo(void *param)
       sprintf(tempString2, "Current Flywheel RPM: %d", abs(motor_get_actual_velocity(PORT_FLYWHEEL)));
       sprintf(tempString3, "Limit Switch: %d", adi_digital_read(LIMITSWITCHPORT));
       sprintf(tempString4, "Cur Power: %d", currentAssignedFlywheelPower);
-      sprintf(tempString5, "Num Flags: %d", numVisionObjects);
+      sprintf(tempString5, "Indexer Direction: %d", indexerDirection);
       sprintf(tempString6, "Battery Voltage: %d", battery_get_voltage());
 
       lcd_set_text(1, tempString1);

@@ -16,8 +16,8 @@
 #define BETWEENFLAGPOWER 99
 #define BETWEEENFLAGRPM 83
 
-#define FRONTTILEPOWER 106
-#define FRONTTILERPM 92
+#define FRONTTILEPOWER 104
+#define FRONTTILERPM 90
 #define BACKTILEPOWER 117
 #define BACKTILERPM 97
 
@@ -42,9 +42,9 @@
 
 #define DIFFBRAKE 5
 
-#define KP 0.5
-#define KI 0.01
-#define INTEGRALLIMIT 4
+#define KP 1 //0.7
+#define KI 0.02
+#define INTEGRALLIMIT 6 //4
 
 extern int autonNumber;
 extern bool redAlliance;

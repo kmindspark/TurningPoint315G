@@ -153,13 +153,13 @@ void backwardAbs(int ticks, int power)
 void setIndexerPower(int indexerPower)
 {
    motor_move(PORT_INDEXER, indexerPower);
-   if (indexerPower > 0)
+   if (indexerPower >= 0)
    {
       indexerDirectionAuton = 1;
    }
    else
    {
-      indexerDirectionAuton = 0;
+      indexerDirectionAuton = -1;
    }
 }
 
@@ -167,56 +167,67 @@ void autonFlywheel(void *param)
 {
    motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
    motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
+   double integral = 0;
    while (true)
    {
-      if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM + 15)
+      // PID LOOP
+      int difference = autonCurrentFlywheelGoalRPM - abs(motor_get_actual_velocity(PORT_FLYWHEEL));
+
+      double proportional = KP * difference;
+      integral = integral + KI * difference;
+
+      if (integral > INTEGRALLIMIT)
       {
-         motor_move(PORT_FLYWHEEL, -1);
-         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM + 5)
-         {
-            delay(20);
-         }
-         motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
+         integral = INTEGRALLIMIT;
       }
-      if (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < autonCurrentFlywheelGoalRPM - 6)
+      else if (integral < -INTEGRALLIMIT)
       {
-         motor_move(PORT_FLYWHEEL, 127);
-         setIndexerPower(100);
-         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) < autonCurrentFlywheelGoalRPM && !rapidFire)
-         {
-            delay(20);
-         }
-         if (!rapidFire)
-         {
-            delay(350);
-         }
-         motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
+         integral = -INTEGRALLIMIT;
       }
+
+      int currentAssignedFlywheelPower = autonCurrentFlywheelPower + (int)proportional + (int)integral;
+
+      motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
+      if (indexerDirectionAuton > -1)
+      {
+         setIndexerPower(currentAssignedFlywheelPower + FRICTIONPOWER);
+      }
+
       if (rapidFire)
       {
          setIndexerPower(-127);
          //rapid fire
-         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM - 16)
+         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM - 10)
          {
+            int difference = autonCurrentFlywheelGoalRPM - abs(motor_get_actual_velocity(PORT_FLYWHEEL));
+
+            double proportional = KP * difference;
+            integral = integral + KI * difference;
+
+            if (integral > INTEGRALLIMIT)
+            {
+               integral = INTEGRALLIMIT;
+            }
+            else if (integral < -INTEGRALLIMIT)
+            {
+               integral = -INTEGRALLIMIT;
+            }
+
+            int currentAssignedFlywheelPower = autonCurrentFlywheelPower + EXTRAPOWER + (int)proportional + (int)integral;
+
+            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
             delay(20);
          }
          motor_move(PORT_FLYWHEEL, -3); //-3);
          autonCurrentFlywheelGoalRPM = MIDDLEFLAGRPM;
          autonCurrentFlywheelPower = MIDDLEFLAGPOWER;
-         delay(100);
+         delay(85);
          motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
          delay(1000);
          motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
 
          rapidFire = false;
       }
-      /*if (adi_digital_read(LIMITSWITCHPORT) == 1)
-      {
-         motor_move_relative(PORT_INDEXER, -400, 90);
-         //motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower + EXTRAPOWER);
-         delay(240);
-         setIndexerPower(autonCurrentFlywheelPower + FRICTIONPOWER);
-      }*/
       delay(20);
    }
 }
@@ -256,7 +267,7 @@ void displayInfoAuton(void *param)
    return;
 }
 
-void fullAutonFront(bool park, bool redAlliance)
+void fullAutonFront(bool park, bool redAlliance, bool twoflags)
 {
    // Start the flywheel
    setFlywheelSpeed(FRONTTILEPOWER, FRONTTILERPM);
@@ -287,25 +298,60 @@ void fullAutonFront(bool park, bool redAlliance)
    forwardCoast(400, 100);
    forwardCoast(200, 10);
    assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
-   delay(200);
+   delay(190);
    assignDriveMotorsPower(0, 0);
    rapidFire = true;
    delay(1000);
 
-   //Move forward and toggle the low flag
+   // Move forward and toggle the low flag
    turnRight(60, 200, redAlliance);
    forwardCoast(200, 60);
    forwardCoast(1400, 127);
    forwardCoast(550, 90);
 
-   //Drive back and align with cap
+   // Drive back and align with cap
    assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
    delay(500);
    backward(1130, 150);
    delay(150);
    turnLeft(RIGHTANGLETURN, 100, redAlliance);
 
-   //Flip the cap with balls on it
+   if (twoflags)
+   {
+      setFlywheelSpeed(FRONTTILEPOWER, FRONTTILERPM);
+
+      // Back into the wall
+      backwardCoast(200, 127);
+      assignDriveMotorsPower(-80, -80);
+      delay(300);
+      assignDriveMotorsPower(-40, -40);
+      setIndexerPower(-127);
+      delay(190);
+      setIndexerPower(0);
+      delay(110);
+      assignDriveMotorsPower(0, 0);
+
+      // Move forward, align, and fire
+      forwardCoast(900, 100);
+      assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
+      delay(200);
+
+      turnRight(300, 100, redAlliance);
+      rapidFire = true;
+
+      // Turn off flywheel and flip cap and hit lower flag
+      delay(800);
+      task_suspend(flywheelTask);
+      task_delete(flywheelTask);
+      motor_move(PORT_FLYWHEEL, 0);
+      setIndexerPower(-127);
+      turnRight(60, 200, redAlliance);
+      forwardCoast(1500, 100);
+
+      return;
+   }
+
+   // Flip the cap with balls on it
    assignDriveMotorsPower(0, 0);
    task_suspend(flywheelTask);
    task_delete(flywheelTask);
@@ -317,19 +363,18 @@ void fullAutonFront(bool park, bool redAlliance)
    forward(530, 120);
    setIndexerPower(0);
 
-   //Park if needed, otherwise move backwards
+   // Park if needed, otherwise move backwards
    if (park)
    {
-      turnLeft(RIGHTANGLETURN + 25, 100, redAlliance);
+      turnLeft(RIGHTANGLETURN + 10, 100, redAlliance);
 
-      forwardCoast(4300, 127);
+      forwardCoast(4500, 127);
       assignDriveMotorsPower(-30, -30);
       delay(100);
       assignDriveMotorsPower(0, 0);
    }
    else
    {
-
       backward(300, 100);
       delay(1000);
    }
@@ -337,14 +382,15 @@ void fullAutonFront(bool park, bool redAlliance)
 
 void flagAutonBack(bool park, bool redAlliance)
 {
+   delay(3000);
+
    // Start the flywheel
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
    setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
 
    // Shoot the ball
-   delay(5000);
+   delay(3000);
    setIndexerPower(-127);
-   setFlywheelSpeed(BACKTILEPOWER + EXTRAPOWER, BACKTILERPM);
    delay(1500);
    setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
    setIndexerPower(BACKTILEPOWER);
@@ -376,6 +422,11 @@ void flagAutonBack(bool park, bool redAlliance)
       delay(100);
       assignDriveMotorsPower(0, 0);
    }
+   else
+   {
+      backward(1000, 150);
+      turnRight(RIGHTANGLETURN, 100, redAlliance);
+   }
 }
 
 void autonomous()
@@ -391,10 +442,13 @@ void autonomous()
       flagAutonBack(false, redAlliance);
       break;
    case 3:
-      fullAutonFront(true, redAlliance);
+      fullAutonFront(true, redAlliance, false);
       break;
    case 4:
-      fullAutonFront(false, redAlliance);
+      fullAutonFront(false, redAlliance, false);
+      break;
+   case 5:
+      fullAutonFront(false, redAlliance, true);
       break;
    }
 }
