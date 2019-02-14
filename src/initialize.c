@@ -5,9 +5,10 @@ bool redAlliance = false;
 
 #define NUMAUTONS 6
 
-static const char *btnm_map[] = {"Back w/P", "Back w/o P", "\n",
-                                 "Main Front w/P", "Main Front w/o P", "Front w/2 Flags", ""};
-static const char *auton_strings[] = {"Back w/P", "Back w/o P", "Main Front w/P", "Main Front w/o P", "Front w/2 Flags"};
+static const char *btnm_map[] = {"B w/P", "B w/o P", "B Troll P", "\n",
+                                 "MFr w/P", "MFr w/o P", "Fr w/Fl", ""};
+static const char *auton_strings[] = {"B w/P", "B w/o P", "B Troll P", "MFr w/P",
+                                      "MFr w/o P", "Fr w/Fl"};
 static const char *alliance_map[] = {"Red", "Blue", ""};
 
 void initializeDriveMotors()
