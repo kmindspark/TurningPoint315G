@@ -221,7 +221,7 @@ void autonFlywheel(void *param)
          motor_move(PORT_FLYWHEEL, -3); //-3);
          autonCurrentFlywheelGoalRPM = MIDDLEFLAGRPM;
          autonCurrentFlywheelPower = MIDDLEFLAGPOWER;
-         delay(80);
+         delay(68);
          motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
          delay(1000);
          motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
@@ -293,7 +293,7 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
    // Turn and shoot the balls
    forwardCoast(315, 50);
    assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
-   delay(58);
+   delay(75);
    turnRight(RIGHTANGLETURN, 100, redAlliance);
    forwardCoast(400, 100);
    forwardCoast(200, 10);
@@ -337,7 +337,7 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
    if (twoflags)
    {
       rapidFire = false;
-      setFlywheelSpeed(FRONTTILEPOWER, FRONTTILERPM);
+      setFlywheelSpeed(FRONTTILEPOWER - 2, FRONTTILERPM - 2);
 
       // Back into the wall
       /*
@@ -387,7 +387,7 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
 
    setIndexerPower(-127);
    forwardCoast(1900, 60);
-   setIndexerPower(-60);
+   setIndexerPower(-10);
    forward(530, 120);
    setIndexerPower(0);
 
@@ -396,7 +396,7 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
    {
       turnLeft(RIGHTANGLETURN + 10, 100, redAlliance);
 
-      forwardCoast(4500, 127);
+      forwardCoast(4450, 127);
       assignDriveMotorsPower(-30, -30);
       delay(100);
       assignDriveMotorsPower(0, 0);
@@ -410,17 +410,15 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
 
 void flagAutonBack(bool park, bool redAlliance, bool troll)
 {
-   delay(1000);
-
    // Start the flywheel
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
    setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
 
    // Shoot the ball
-   delay(3000);
+   delay(4000);
    setIndexerPower(-127);
    delay(1500);
-   setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
+   setFlywheelSpeed(BACKTILEPOWER - 2, BACKTILERPM - 2);
    setIndexerPower(BACKTILEPOWER);
 
    // Align with the wall
@@ -455,13 +453,13 @@ void flagAutonBack(bool park, bool redAlliance, bool troll)
          assignDriveMotorsPower(10 + DIFFBRAKE, 10);
          delay(58);
 
-         turnLeft(330, 100, redAlliance);
+         turnLeft(333, 100, redAlliance);
 
          setIndexerPower(-127);
          delay(750);
          setIndexerPower(0);
 
-         turnRight(330, 100, redAlliance);
+         turnRight(333, 100, redAlliance);
 
          forwardCoast(615, 127);
       }

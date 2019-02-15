@@ -319,7 +319,7 @@ void flywheel(void *param)
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
             currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-            delay(130);
+            delay(94);
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             delay(1000);
          }
@@ -384,12 +384,14 @@ void indexer(void *param)
       }
       if (adi_digital_read(LIMITSWITCHPORT) == 1 && armed != 2)
       {
-         delay(50);
+         delay(150);
          if (adi_digital_read(LIMITSWITCHPORT) == 1)
          {
             indexerDirection = 1;
-            motor_move_relative(PORT_INDEXER, -440, 90);
-            delay(300);
+            //motor_move_relative(PORT_INDEXER, -440, 92);
+            motor_move(PORT_INDEXER, -127);
+            delay(197);
+            motor_move(PORT_INDEXER, 0);
             indexerDirection = 0;
             assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
 
