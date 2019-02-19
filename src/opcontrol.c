@@ -382,16 +382,26 @@ void indexer(void *param)
             armed -= 1;
          }
       }
-      if (adi_digital_read(LIMITSWITCHPORT) == 1 && armed != 2)
+      if (adi_digital_read(LIMITSWITCHPORT) == 1 && armed < 2)
       {
          delay(150);
          if (adi_digital_read(LIMITSWITCHPORT) == 1)
          {
             indexerDirection = 1;
-            //motor_move_relative(PORT_INDEXER, -440, 92);
-            motor_move(PORT_INDEXER, -127);
-            delay(197);
-            motor_move(PORT_INDEXER, 0);
+
+            if (armed == 0)
+            {
+               motor_move(PORT_INDEXER, -127);
+               delay(40);
+               motor_move(PORT_INDEXER, 0);
+            }
+            else
+            {
+               motor_move(PORT_INDEXER, -127);
+               delay(200);
+               motor_move(PORT_INDEXER, 0);
+            }
+
             indexerDirection = 0;
             assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
 
