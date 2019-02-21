@@ -392,13 +392,17 @@ void indexer(void *param)
             if (armed == 0)
             {
                motor_move(PORT_INDEXER, -127);
-               delay(140);
+               delay(70);
                motor_move(PORT_INDEXER, 0);
+               while (adi_digital_read(LIMITSWITCHPORT) == 1 && controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 0)
+               {
+                  delay(100);
+               }
             }
             else
             {
                motor_move(PORT_INDEXER, -127);
-               delay(200);
+               delay(140);
                motor_move(PORT_INDEXER, 0);
             }
 
