@@ -14,6 +14,7 @@ int autonCurrentFlywheelPower = 0;
 int autonCurrentFlywheelGoalRPM = 0;
 
 bool rapidFire = false;
+bool backRapidFire = false;
 
 #define RIGHTANGLETURN 800 //780 //780 // 770 //850
 
@@ -163,10 +164,8 @@ void setIndexerPower(int indexerPower)
    }
 }
 
-void autonFlywheel(void *param)
+void flywheelPID(void *param)
 {
-   motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
-   motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
    double integral = 0;
    while (true)
    {
@@ -192,43 +191,6 @@ void autonFlywheel(void *param)
       {
          setIndexerPower(currentAssignedFlywheelPower + FRICTIONPOWER);
       }
-
-      if (rapidFire)
-      {
-         setIndexerPower(-127);
-         //rapid fire
-         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM - 10)
-         {
-            int difference = autonCurrentFlywheelGoalRPM - abs(motor_get_actual_velocity(PORT_FLYWHEEL));
-
-            double proportional = KP * difference;
-            integral = integral + KI * difference;
-
-            if (integral > INTEGRALLIMIT)
-            {
-               integral = INTEGRALLIMIT;
-            }
-            else if (integral < -INTEGRALLIMIT)
-            {
-               integral = -INTEGRALLIMIT;
-            }
-
-            int currentAssignedFlywheelPower = autonCurrentFlywheelPower + EXTRAPOWER + (int)proportional + (int)integral;
-
-            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
-            delay(20);
-         }
-         motor_move(PORT_FLYWHEEL, -3); //-3);
-         autonCurrentFlywheelGoalRPM = MIDDLEFLAGRPM;
-         autonCurrentFlywheelPower = MIDDLEFLAGPOWER;
-         delay(68);
-         motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
-         delay(1000);
-         motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
-
-         rapidFire = false;
-      }
-      delay(20);
    }
 }
 
@@ -238,9 +200,48 @@ void setFlywheelSpeed(int goalPower, int goalRPM)
    autonCurrentFlywheelGoalRPM = goalRPM;
 }
 
+void autonFlywheel(void *param)
+{
+   task_t flywheelPID = task_create(flywheelPID, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel PID");
+
+   double integral = 0;
+   while (true)
+   {
+      if (rapidFire || backRapidFire)
+      {
+         setIndexerPower(-127);
+         //rapid fire
+         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > autonCurrentFlywheelGoalRPM - 10)
+         {
+         }
+
+         if (backRapidFire)
+         {
+            setFlywheelSpeed(BACKTILEPOWER - 6, BACKTILERPM - 6);
+            setIndexerPower(0);
+            delay(200);
+            setIndexerPower(127);
+         }
+         else
+         {
+            motor_move(PORT_FLYWHEEL, -3); //-3);
+            autonCurrentFlywheelGoalRPM = MIDDLEFLAGRPM;
+            autonCurrentFlywheelPower = MIDDLEFLAGPOWER;
+            delay(68);
+            motor_move(PORT_FLYWHEEL, autonCurrentFlywheelPower);
+            delay(1000);
+            motor_move(PORT_INDEXER, autonCurrentFlywheelPower + FRICTIONPOWER);
+         }
+
+         rapidFire = false;
+         backRapidFire = false;
+      }
+      delay(20);
+   }
+}
+
 void displayInfoAuton(void *param)
 {
-
    lcd_initialize();
    while (true)
    {

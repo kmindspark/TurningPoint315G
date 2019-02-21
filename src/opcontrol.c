@@ -392,7 +392,7 @@ void indexer(void *param)
             if (armed == 0)
             {
                motor_move(PORT_INDEXER, -127);
-               delay(40);
+               delay(140);
                motor_move(PORT_INDEXER, 0);
             }
             else

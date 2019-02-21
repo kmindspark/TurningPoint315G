@@ -11,8 +11,8 @@
 
 #define HIGHFLAGPOWER 118 //125
 #define HIGHFLAGRPM 102
-#define MIDDLEFLAGPOWER 76 //77
-#define MIDDLEFLAGRPM 62
+#define MIDDLEFLAGPOWER 80 //77
+#define MIDDLEFLAGRPM 67
 #define BETWEENFLAGPOWER 99
 #define BETWEEENFLAGRPM 83
 
@@ -34,16 +34,13 @@
 #define ANGLETOLERANCE 5
 #define HEIGHTTOLERANCE 5
 
-#define KPFLYWHEEL 0.5
-#define KIFLYWHEEL 0.05
-
 #define EXTRAPOWER 10
 #define FRICTIONPOWER 0
 
 #define DIFFBRAKE 5
 
-#define KP 1 //0.7
-#define KI 0.02
+#define KP 0.7          //0.7
+#define KI 0.005        //0.005        //0.02
 #define INTEGRALLIMIT 6 //4
 
 extern int autonNumber;
