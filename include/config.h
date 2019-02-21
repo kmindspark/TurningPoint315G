@@ -9,7 +9,7 @@
 #define PORT_DRIVERIGHTCENTER 4
 #define PORT_DRIVELEFTFRONT 7
 
-#define HIGHFLAGPOWER 118 //125
+#define HIGHFLAGPOWER 122 //125
 #define HIGHFLAGRPM 102
 #define MIDDLEFLAGPOWER 80 //77
 #define MIDDLEFLAGRPM 67
@@ -39,8 +39,8 @@
 
 #define DIFFBRAKE 5
 
-#define KP 0.7          //0.7
-#define KI 0.005        //0.005        //0.02
+#define KP 0            //0.7          //0.7
+#define KI 0            //0.005        //0.005        //0.02
 #define INTEGRALLIMIT 6 //4
 
 extern int autonNumber;
