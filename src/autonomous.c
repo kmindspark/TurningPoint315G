@@ -108,6 +108,30 @@ void turnRight(int ticks, int power, bool reversed)
    }
 }
 
+void oneSideLeft(int ticks, int power, bool reversed)
+{
+   if (reversed)
+   {
+      oneSideRight(ticks, power, false);
+   }
+   else
+   {
+      assignDriveMotorsDist(0, ticks, power, true, true);
+   }
+}
+
+void oneSideRight(int ticks, int power, bool reversed)
+{
+   if (reversed)
+   {
+      oneSideLeft(ticks, power, false);
+   }
+   else
+   {
+      assignDriveMotorsDist(ticks, 0, power, true, true);
+   }
+}
+
 void forwardCoast(int ticks, int power)
 {
    clearDriveMotors();
@@ -283,7 +307,7 @@ void displayInfoAuton(void *param)
    return;
 }
 
-void fullAutonFront(bool park, bool redAlliance, bool twoflags)
+void fullAutonFront(bool park, bool redAlliance, bool twoflags, bool skills)
 {
    // Start the flywheel
    setFlywheelSpeed(HIGHFLAGPOWER, HIGHFLAGRPM);
@@ -294,12 +318,21 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
    forwardCoast(200, 40);
    forwardCoast(1850, 127);
    forwardCoast(200, 10);
+   if (skills)
+   {
+      setIndexerPower(-100);
+      forwardCoast(200, 127);
+      setIndexerPower(1);
+   }
    assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
    delay(75);
    backwardCoast(200, 60);
-   backwardCoast(2350, 127);
-   assignDriveMotorsPower(-80, -80);
-   delay(300);
+   backwardCoast(1850, 127);
+   if (skills)
+   {
+      backwardCoast(200, 127);
+   }
+   backwardCoast(600, 80);
    assignDriveMotorsPower(-30, -30);
    delay(500);
    assignDriveMotorsPower(0, 0);
@@ -309,7 +342,7 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
    setIndexerPower(FRONTTILEPOWER);
 
    // Turn and shoot the balls
-   forwardCoast(315, 50);
+   forwardCoast(270, 50); //315
    assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
    delay(58); //94/90 //75
    assignDriveMotorsPower(0, 0);
@@ -334,55 +367,51 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
    turnLeft(47, 200, redAlliance);
    forwardCoast(600, 127);*/
 
-   turnRight(30, 200, redAlliance);
+   turnRight(42, 100, redAlliance);
    forwardCoast(900, 127);
 
    if (twoflags)
    {
+      rapidFire = false;
+      currentBrakingTime = 32;
+      setFlywheelSpeed(HIGHFLAGPOWER - 8, HIGHFLAGRPM - 7);
+
       forwardCoast(800, 127);
       assignDriveMotorsPower(100, 100);
       delay(400);
       assignDriveMotorsPower(0, 0);
-      backwardCoast(560, 100);
+      backwardCoast(860, 100);
+      assignDriveMotorsPower(10 + DIFFBRAKE, 10);
+      delay(200);
+      assignDriveMotorsPower(0, 0);
+      turnLeft(RIGHTANGLETURN, 100, redAlliance);
+
+      forwardCoast(320, 100);
       assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
       delay(200);
       assignDriveMotorsPower(0, 0);
-      turnLeft(RIGHTANGLETURN + 340, 100, redAlliance);
-   }
-   else
-   {
-      forwardCoast(790, 90);
-      // Drive back and align with cap
-      assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
-      delay(500);
-      backward(1180, 150);
-      delay(150);
-      turnLeft(RIGHTANGLETURN + 30, 100, redAlliance);
-   }
 
-   if (twoflags)
-   {
-      rapidFire = false;
-      currentBrakingTime = 15;
-      setFlywheelSpeed(HIGHFLAGPOWER - 16, HIGHFLAGRPM - 17);
+      oneSideLeft(RIGHTANGLETURN + 50, 100, redAlliance);
 
       // Move forward, align, and fire
-      forwardCoast(500, 100);
-      setIndexerPower(-40);
-      forwardCoast(390, 40);
+      setIndexerPower(-45);
+      forwardCoast(250, 40);
       assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
+      delay(100);
+      assignDriveMotorsPower(0, 0);
+
+      setIndexerPower(1);
+
+      backwardCoast(370, 80);
+      assignDriveMotorsPower(10 + DIFFBRAKE, 10);
       delay(200);
       assignDriveMotorsPower(0, 0);
 
       setIndexerPower(1);
 
-      backwardCoast(400, 80);
-      assignDriveMotorsPower(10 + DIFFBRAKE, 10);
-      delay(200);
-      assignDriveMotorsPower(0, 0);
       delay(1500);
 
-      turnRight(470, 100, redAlliance);
+      turnRight(375, 100, redAlliance);
       delay(50);
       rapidFire = true;
 
@@ -392,15 +421,6 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
       task_delete(flywheelTask);
       motor_move(PORT_FLYWHEEL, 0);
       setIndexerPower(-127);
-
-      /*
-      turnRight(60, 200, redAlliance);
-
-      forwardCoast(500, 60);
-      forwardCoast(1500, 127);
-
-      turnRight(280, 150, redAlliance);
-      forwardCoast(500, 127);*/
 
       turnLeft(500, 80, redAlliance);
       setIndexerPower(-127);
@@ -413,6 +433,14 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags)
 
       return;
    }
+
+   forwardCoast(790, 90);
+   // Drive back and align with cap
+   assignDriveMotorsPower(-10 - DIFFBRAKE, -10);
+   delay(500);
+   backward(1180, 150);
+   delay(150);
+   turnLeft(RIGHTANGLETURN + 30, 100, redAlliance);
 
    // Flip the cap with balls on it
    assignDriveMotorsPower(0, 0);
@@ -459,10 +487,12 @@ void flagAutonBack(bool park, bool redAlliance, bool troll)
 {
    // Start the flywheel
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
-   setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
+   //setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
+
+   setFlywheelSpeed(BACKTILEPOWER - 4, BACKTILERPM - 4);
 
    // Shoot the ball
-   delay(1800);
+   delay(1700);
    setIndexerPower(-127);
    delay(400);
    setIndexerPower(BACKTILEPOWER);
@@ -500,6 +530,8 @@ void flagAutonBack(bool park, bool redAlliance, bool troll)
       backwardCoast(400, 80);
       assignDriveMotorsPower(10 + DIFFBRAKE, 10);
       setIndexerPower(1);
+      delay(200);
+      assignDriveMotorsPower(0, 0);
       delay(500);
 
       turnLeft(2 * RIGHTANGLETURN - 400, 100, redAlliance);
@@ -579,13 +611,16 @@ void autonomous()
       flagAutonBack(true, redAlliance, true);
       break;
    case 4:
-      fullAutonFront(true, redAlliance, false);
+      flagAutonFront(true, redAlliance, false, true);
       break;
    case 5:
-      fullAutonFront(false, redAlliance, false);
+      fullAutonFront(true, redAlliance, false, false);
       break;
    case 6:
-      fullAutonFront(false, redAlliance, true);
+      fullAutonFront(false, redAlliance, false, false);
+      break;
+   case 7:
+      fullAutonFront(false, redAlliance, true, false);
       break;
    }
 

@@ -5,9 +5,9 @@ bool redAlliance = false;
 
 #define NUMAUTONS 6
 
-static const char *btnm_map[] = {"B w/P", "B w/o P", "NO U", "\n",
+static const char *btnm_map[] = {"B w/P", "B w/o P", "NO U", "Psk", "\n",
                                  "MFr w/P", "MFr w/o P", "Fr w/Fl", ""};
-static const char *auton_strings[] = {"B w/P", "B w/o P", "NO U", "MFr w/P",
+static const char *auton_strings[] = {"B w/P", "B w/o P", "NO U", "Psk", "MFr w/P",
                                       "MFr w/o P", "Fr w/Fl"};
 static const char *alliance_map[] = {"Red", "Blue", ""};
 
