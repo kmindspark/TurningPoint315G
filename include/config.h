@@ -4,7 +4,7 @@
 #define PORT_FLYWHEEL 3
 #define PORT_DRIVELEFTBACK 5
 #define PORT_DRIVELEFTCENTER 6
-#define PORT_INDEXER 8
+#define PORT_INDEXER 9
 #define PORT_VISION 16
 #define PORT_DRIVERIGHTCENTER 4
 #define PORT_DRIVELEFTFRONT 7
@@ -18,8 +18,8 @@
 
 #define FRONTTILEPOWER 106
 #define FRONTTILERPM 92
-#define BACKTILEPOWER 117
-#define BACKTILERPM 97
+#define BACKTILEPOWER 119
+#define BACKTILERPM 99
 
 #define LIMITSWITCHPORT 3
 
@@ -39,8 +39,8 @@
 
 #define DIFFBRAKE 5
 
-#define KP 0            //0.7          //0.7
-#define KI 0            //0.005        //0.005        //0.02
+#define KP 0.7          //0.7          //0.6
+#define KI 0.005        //0.005        //0.005             //0.02
 #define INTEGRALLIMIT 6 //4
 
 extern int autonNumber;

@@ -12,6 +12,8 @@ bool doubleFire = false;
 bool singleFire = false;
 int numVisionObjects = 0;
 
+bool readyToMove = false;
+
 int armed = 0;
 
 #define max(a, b) \
@@ -194,29 +196,47 @@ void newVisionAlign(int sigNum)
    }
 }
 
+void lockDriveMotors()
+{
+   motor_move_relative(PORT_DRIVELEFTBACK, 0, 200);
+   motor_move_relative(PORT_DRIVELEFTCENTER, 0, 200);
+   motor_move_relative(PORT_DRIVELEFTFRONT, 0, 200);
+   motor_move_relative(PORT_DRIVERIGHTBACK, 0, 200);
+   motor_move_relative(PORT_DRIVERIGHTCENTER, 0, 200);
+   motor_move_relative(PORT_DRIVERIGHTFRONT, 0, 200);
+}
+
 void drive(void *param)
 {
+   int prevForward = 0;
+   int prevTurn = 0;
    while (true)
    {
-      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
+      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2))
       {
-         int sigNum = BLUEFLAGSIG;
-         if (!redAlliance)
-         {
-            sigNum = REDFLAGSIG;
-         }
-         newVisionAlign(sigNum);
+         doubleFire = true;
+         delay(300);
+         assignDriveMotorsDControl(90, 90);
+         delay(300);
+         assignDriveMotorsDControl(0, 0);
+         readyToMove = false;
       }
 
       int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
       int turn = controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
 
-      motor_move(PORT_DRIVELEFTFRONT, max(-127, min(127, forward + turn)));
-      motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
-      motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward + turn)));
-      motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward - turn)));
-      motor_move(PORT_DRIVELEFTCENTER, max(-127, min(127, forward + turn)));
-      motor_move(PORT_DRIVERIGHTCENTER, max(-127, min(127, forward - turn)));
+      if (prevForward != forward || prevTurn != turn)
+      {
+         motor_move(PORT_DRIVELEFTFRONT, max(-127, min(127, forward + turn)));
+         motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
+         motor_move(PORT_DRIVELEFTBACK, max(-127, min(127, forward + turn)));
+         motor_move(PORT_DRIVERIGHTBACK, max(-127, min(127, forward - turn)));
+         motor_move(PORT_DRIVELEFTCENTER, max(-127, min(127, forward + turn)));
+         motor_move(PORT_DRIVERIGHTCENTER, max(-127, min(127, forward - turn)));
+      }
+
+      prevForward = forward;
+      prevTurn = turn;
 
       delay(20);
    }
@@ -277,8 +297,9 @@ void flywheel(void *param)
          knownRPM = false;
          integral = 0;
       }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT) || singleFire || doubleFire)
+      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R1) || singleFire || doubleFire)
       {
+         lockDriveMotors();
          //rapid fire
          indexerDirection = 1;
          motor_move(PORT_INDEXER, -127); //100
@@ -319,7 +340,8 @@ void flywheel(void *param)
             currentFlywheelGoalRPM = MIDDLEFLAGRPM;
             currentFlywheelPower = MIDDLEFLAGPOWER;
             currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-            delay(94);
+            delay(110);
+            readyToMove = true;
             motor_move(PORT_FLYWHEEL, currentFlywheelPower);
             delay(1000);
          }
@@ -365,6 +387,7 @@ void indexer(void *param)
    {
       if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 1)
       {
+         lockDriveMotors();
          motor_move(PORT_INDEXER, -127);
          motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
          indexerDirection = 1;
@@ -392,8 +415,9 @@ void indexer(void *param)
             if (armed == 0)
             {
                motor_move(PORT_INDEXER, -127);
-               delay(70);
+               delay(170);
                motor_move(PORT_INDEXER, 0);
+               indexerDirection = 0;
                while (adi_digital_read(LIMITSWITCHPORT) == 1 && controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 0)
                {
                   delay(100);
@@ -402,12 +426,12 @@ void indexer(void *param)
             else
             {
                motor_move(PORT_INDEXER, -127);
-               delay(140);
+               delay(170);
                motor_move(PORT_INDEXER, 0);
             }
 
             indexerDirection = 0;
-            assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
+            //assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
 
             armed += 1;
          }
@@ -416,9 +440,13 @@ void indexer(void *param)
       {
          armed = 0;
       }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
+      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2))
       {
          armed = 1;
+      }
+      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
+      {
+         lockDriveMotors();
       }
       delay(20);
    }
