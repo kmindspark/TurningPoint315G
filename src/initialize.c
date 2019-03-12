@@ -29,8 +29,8 @@ void initializeDriveMotors()
 
 void initializeFlywheelMotors()
 {
-   motor_set_gearing(PORT_FLYWHEEL, E_MOTOR_GEARSET_36);
-   motor_set_gearing(PORT_INDEXER, E_MOTOR_GEARSET_36);
+   motor_set_gearing(PORT_FLYWHEEL, E_MOTOR_GEARSET_06);
+   motor_set_gearing(PORT_INDEXER, E_MOTOR_GEARSET_06);
    motor_set_reversed(PORT_FLYWHEEL, true);
    motor_set_reversed(PORT_INDEXER, false);
 }

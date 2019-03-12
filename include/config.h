@@ -1,25 +1,25 @@
 // All the motor definitions
-#define PORT_DRIVERIGHTBACK 1
-#define PORT_DRIVERIGHTFRONT 15
-#define PORT_FLYWHEEL 3
-#define PORT_DRIVELEFTBACK 5
-#define PORT_DRIVELEFTCENTER 6
-#define PORT_INDEXER 9
+#define PORT_DRIVERIGHTBACK 13
+#define PORT_DRIVERIGHTFRONT 14
+#define PORT_FLYWHEEL 12
+#define PORT_DRIVELEFTBACK 1
+#define PORT_DRIVELEFTCENTER 2
+#define PORT_INDEXER 11
 #define PORT_VISION 16
-#define PORT_DRIVERIGHTCENTER 4
-#define PORT_DRIVELEFTFRONT 7
+#define PORT_DRIVERIGHTCENTER 15
+#define PORT_DRIVELEFTFRONT 3
 
-#define HIGHFLAGPOWER 122 //125
-#define HIGHFLAGRPM 102
+#define HIGHFLAGPOWER 97 //125
+#define HIGHFLAGRPM 460
 #define MIDDLEFLAGPOWER 80 //77
-#define MIDDLEFLAGRPM 67
+#define MIDDLEFLAGRPM 400
 #define BETWEENFLAGPOWER 99
-#define BETWEEENFLAGRPM 83
+#define BETWEEENFLAGRPM 530
 
 #define FRONTTILEPOWER 106
-#define FRONTTILERPM 92
+#define FRONTTILERPM 552
 #define BACKTILEPOWER 119
-#define BACKTILERPM 99
+#define BACKTILERPM 594
 
 #define LIMITSWITCHPORT 3
 
@@ -39,8 +39,8 @@
 
 #define DIFFBRAKE 5
 
-#define KP 0.7          //0.7          //0.6
-#define KI 0.005        //0.005        //0.005             //0.02
+#define KP 0.1          //0.7          //0.7          //0.6
+#define KI 0.005        //0.005        //0.005        //0.005             //0.02
 #define INTEGRALLIMIT 6 //4
 
 extern int autonNumber;

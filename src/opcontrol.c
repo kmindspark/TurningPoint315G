@@ -225,7 +225,7 @@ void drive(void *param)
       int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
       int turn = controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
 
-      if (prevForward != forward || prevTurn != turn)
+      if (prevForward != forward || prevTurn != turn || forward != 0 || turn != 0)
       {
          motor_move(PORT_DRIVELEFTFRONT, max(-127, min(127, forward + turn)));
          motor_move(PORT_DRIVERIGHTFRONT, max(-127, min(127, forward - turn)));
@@ -466,7 +466,7 @@ void displayInfo(void *param)
 
       sprintf(tempString1, "Flywheel Temperature: %d", (int)motor_get_temperature(PORT_FLYWHEEL));
       sprintf(tempString2, "Current Flywheel RPM: %d", abs(motor_get_actual_velocity(PORT_FLYWHEEL)));
-      sprintf(tempString3, "Limit Switch: %d", adi_digital_read(LIMITSWITCHPORT));
+      sprintf(tempString3, "Indexer Temperature: %d", (int)motor_get_temperature(PORT_INDEXER));
       sprintf(tempString4, "Cur Power: %d", currentAssignedFlywheelPower);
       sprintf(tempString5, "Indexer Direction: %d", indexerDirection);
       sprintf(tempString6, "Battery Voltage: %d", battery_get_voltage());
