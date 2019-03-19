@@ -25,6 +25,15 @@ void initializeDriveMotors()
    motor_set_reversed(PORT_DRIVERIGHTBACK, true);
    motor_set_reversed(PORT_DRIVELEFTCENTER, false);
    motor_set_reversed(PORT_DRIVERIGHTCENTER, true);
+
+   //motor_pid_s_t pid = motor_convert_pid(0.0, DRIVEP, DRIVEI, DRIVED);
+
+   //motor_set_pos_pid(PORT_DRIVELEFTFRONT, pid);
+   //motor_set_pos_pid(PORT_DRIVERIGHTFRONT, pid);
+   //motor_set_pos_pid(PORT_DRIVELEFTCENTER, pid);
+   //motor_set_pos_pid(PORT_DRIVERIGHTCENTER, pid);
+   //motor_set_pos_pid(PORT_DRIVERIGHTBACK, pid);
+   //motor_set_pos_pid(PORT_DRIVELEFTBACK, pid);
 }
 
 void initializeFlywheelMotors()

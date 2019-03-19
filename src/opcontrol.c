@@ -1,7 +1,8 @@
 #include "main.h"
 
 int intakeDirection = 0;
-int indexerDirection = 0;
+bool indexerInUse = false;
+bool scraperInUse = false;
 int currentFlywheelPower = 0;
 int currentFlywheelGoalRPM = 0;
 int currentAssignedFlywheelPower = 0;
@@ -44,158 +45,6 @@ bool anyButtonPressed()
           controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y);
 }
 
-vision_object_s_t getTopFlag(int sigNum)
-{
-   vision_object_s_t object_arr[NUM_VISION_OBJECTS];
-   vision_color_code_t curCode = vision_create_color_code(PORT_VISION, VISIONTARGETSIG, sigNum, 0, 0, 0);
-   vision_read_by_code(PORT_VISION, 0, curCode, NUM_VISION_OBJECTS, object_arr);
-   //vision_read_by_sig(PORT_VISION, 0, 1, 2, object_arr);
-
-   numVisionObjects = sizeof(object_arr) / sizeof(object_arr[0]);
-
-   if (numVisionObjects == 0 || numVisionObjects > 2)
-   {
-      vision_object_s_t temp = {.x_middle_coord = 0};
-      return temp;
-   }
-   if (numVisionObjects == 1)
-   {
-      object_arr[0].x_middle_coord = (int)object_arr[0].left_coord + (int)object_arr[0].width / 2;
-      return object_arr[0];
-   }
-   else
-   {
-      if (object_arr[0].y_middle_coord > object_arr[1].y_middle_coord)
-      {
-         printf("Readings: \n");
-         printf("%d\n", object_arr[0].left_coord);
-         printf("%d\n", object_arr[0].top_coord);
-         printf("%d\n", object_arr[0].height);
-         printf("%d\n", object_arr[0].width);
-         object_arr[0].x_middle_coord = (int)object_arr[0].left_coord + (int)object_arr[0].width / 2;
-         return object_arr[0];
-      }
-      else
-      {
-         printf("Readings: \n");
-         printf("%d\n", object_arr[1].left_coord);
-         printf("%d\n", object_arr[1].top_coord);
-         printf("%d\n", object_arr[1].height);
-         printf("%d\n", object_arr[1].width);
-         object_arr[1].x_middle_coord = (int)object_arr[1].left_coord + (int)object_arr[1].width / 2;
-         return object_arr[1];
-      }
-   }
-}
-
-void turnToFlag(int sigNum)
-{
-   vision_object_s_t flag = getTopFlag(sigNum);
-
-   if (numVisionObjects == 0)
-   {
-      return;
-   }
-
-   if (flag.x_middle_coord > VISION_FOV_WIDTH / 2 + ANGLETOLERANCE)
-   {
-      assignDriveMotorsDControl(40, -40);
-      while (flag.x_middle_coord > VISION_FOV_WIDTH / 2 && flag.x_middle_coord > 0 && flag.x_middle_coord < VISION_FOV_WIDTH)
-      {
-         printf("%d\n", flag.x_middle_coord);
-         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
-         {
-            delay(200);
-            return;
-         }
-         flag = getTopFlag(sigNum);
-         delay(20);
-      }
-      assignDriveMotorsDControl(-23, 23);
-   }
-   else if (flag.x_middle_coord < VISION_FOV_WIDTH / 2 - ANGLETOLERANCE)
-   {
-      assignDriveMotorsDControl(-40, 40);
-      while (flag.x_middle_coord < VISION_FOV_WIDTH / 2 && flag.x_middle_coord > 0 && flag.x_middle_coord < VISION_FOV_WIDTH)
-      {
-         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
-         {
-            delay(200);
-            return;
-         }
-         flag = getTopFlag(sigNum);
-         delay(20);
-      }
-      assignDriveMotorsDControl(23, -23);
-   }
-
-   delay(100);
-   assignDriveMotorsDControl(0, 0);
-}
-
-void moveToFlag(int sigNum)
-{
-   vision_object_s_t flag = getTopFlag(sigNum);
-   if (numVisionObjects == 0)
-   {
-      return;
-   }
-
-   if (flag.height < FLAGPIXELHEIGHT - HEIGHTTOLERANCE)
-   {
-      assignDriveMotorsDControl(40, 40);
-      while (flag.height < FLAGPIXELHEIGHT)
-      {
-         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
-         {
-            return;
-         }
-         printf("%d\n", (int)flag.height);
-         flag = getTopFlag(sigNum);
-         delay(20);
-      }
-      assignDriveMotorsDControl(-23, -23);
-   }
-   else if (flag.height > FLAGPIXELHEIGHT + HEIGHTTOLERANCE)
-   {
-      assignDriveMotorsDControl(-40, -40);
-      while (flag.height > FLAGPIXELHEIGHT)
-      {
-         if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
-         {
-            return;
-         }
-         printf("%d\n", (int)flag.height);
-         flag = getTopFlag(sigNum);
-         delay(20);
-      }
-      assignDriveMotorsDControl(23, 23);
-   }
-
-   delay(100);
-   assignDriveMotorsDControl(0, 0);
-}
-
-void newVisionAlign(int sigNum)
-{
-   turnToFlag(sigNum);
-   moveToFlag(sigNum);
-   turnToFlag(sigNum);
-   getTopFlag(sigNum);
-
-   if (!controller_get_digital(CONTROLLER_MASTER, DIGITAL_LEFT))
-   {
-      if (numVisionObjects == 2)
-      {
-         doubleFire = true;
-      }
-      if (numVisionObjects == 1)
-      {
-         singleFire = true;
-      }
-   }
-}
-
 void lockDriveMotors()
 {
    motor_move_relative(PORT_DRIVELEFTBACK, 0, 200);
@@ -212,16 +61,6 @@ void drive(void *param)
    int prevTurn = 0;
    while (true)
    {
-      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2))
-      {
-         doubleFire = true;
-         delay(300);
-         assignDriveMotorsDControl(90, 90);
-         delay(300);
-         assignDriveMotorsDControl(0, 0);
-         readyToMove = false;
-      }
-
       int forward = controller_get_analog(CONTROLLER_MASTER, ANALOG_LEFT_Y);
       int turn = controller_get_analog(CONTROLLER_MASTER, ANALOG_RIGHT_X);
 
@@ -244,7 +83,7 @@ void drive(void *param)
 
 void assignIndexerFree(int power)
 {
-   if (indexerDirection == 0)
+   if (indexerInUse == false)
    {
       motor_move(PORT_INDEXER, power);
    }
@@ -267,26 +106,6 @@ void flywheel(void *param)
          knownRPM = true;
          integral = 0;
       }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A))
-      {
-         currentFlywheelPower = MIDDLEFLAGPOWER;
-         currentFlywheelGoalRPM = MIDDLEFLAGRPM;
-         currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-         motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
-         knownRPM = true;
-         integral = 0;
-      }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
-      {
-         currentFlywheelPower = BETWEENFLAGPOWER;
-         currentFlywheelGoalRPM = BETWEEENFLAGRPM;
-         currentAssignedFlywheelPower = BETWEENFLAGPOWER;
-         motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-         assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
-         knownRPM = true;
-         integral = 0;
-      }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_B))
       {
          currentFlywheelPower = 0;
@@ -301,16 +120,16 @@ void flywheel(void *param)
       {
          lockDriveMotors();
          //rapid fire
-         indexerDirection = 1;
+         indexerInUse = true;
          motor_move(PORT_INDEXER, -127); //100
          motor_move(PORT_FLYWHEEL, currentFlywheelPower + EXTRAPOWER);
 
-         while (abs(motor_get_actual_velocity(PORT_FLYWHEEL)) > currentFlywheelGoalRPM - 8)
+         int prevVal = adi_digital_read(LIMITSWITCHPORT);
+
+         while (prevVal == adi_digital_read(LIMITSWITCHPORT) || adi_digital_read(LIMITSWITCHPORT) == 1)
          {
-            if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_A) ||
-                controller_get_digital(CONTROLLER_MASTER, DIGITAL_B) ||
-                controller_get_digital(CONTROLLER_MASTER, DIGITAL_X) ||
-                controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
+            prevVal = adi_digital_read(LIMITSWITCHPORT);
+            if (anyButtonPressed())
             {
                break;
             }
@@ -331,29 +150,17 @@ void flywheel(void *param)
             currentAssignedFlywheelPower = currentFlywheelPower + EXTRAPOWER + (int)proportional + (int)integral;
 
             motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
-            delay(20);
+            delay(5);
          }
 
-         if (!singleFire)
-         {
-            motor_move(PORT_FLYWHEEL, -3);
-            currentFlywheelGoalRPM = MIDDLEFLAGRPM;
-            currentFlywheelPower = MIDDLEFLAGPOWER;
-            currentAssignedFlywheelPower = MIDDLEFLAGPOWER;
-            delay(110);
-            readyToMove = true;
-            motor_move(PORT_FLYWHEEL, currentFlywheelPower);
-            delay(1000);
-         }
-
-         motor_move(PORT_INDEXER, currentFlywheelPower + FRICTIONPOWER);
-         indexerDirection = 0;
-         firstIter = true;
-
-         singleFire = false;
-         doubleFire = false;
-
-         armed = 0;
+         motor_move(PORT_INDEXER, -127);
+         scraperInUse = true;
+         motor_move(PORT_FLYWHEEL, -127);
+         delay(145);
+         motor_move_relative(PORT_FLYWHEEL, 0, 50);
+         delay(200);
+         scraperInUse = false;
+         indexerInUse = false;
       }
       if (knownRPM)
       {
@@ -374,7 +181,10 @@ void flywheel(void *param)
 
          currentAssignedFlywheelPower = currentFlywheelPower + (int)proportional + (int)integral;
 
-         motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
+         if (!scraperInUse)
+         {
+            motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
+         }
          assignIndexerFree(currentAssignedFlywheelPower + FRICTIONPOWER);
       }
       delay(20);
@@ -387,67 +197,85 @@ void indexer(void *param)
    {
       if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 1)
       {
+         indexerInUse = true;
          lockDriveMotors();
          motor_move(PORT_INDEXER, -127);
          motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
-         indexerDirection = 1;
          while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 1)
          {
             delay(20);
             //wait
          }
-         motor_move(PORT_INDEXER, max(currentAssignedFlywheelPower, 0));
-         motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
-         indexerDirection = 0;
-
-         if (armed > 0)
+         indexerInUse = false;
+         motor_move(PORT_INDEXER, 0);
+      }
+      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2) == 1)
+      {
+         /*indexerInUse = true;
+         scraperInUse = true;
+         lockDriveMotors();
+         motor_move(PORT_FLYWHEEL, -127);
+         if (adi_digital_read(LIMITSWITCHPORT) == 0)
          {
-            armed -= 1;
+            motor_move(PORT_INDEXER, -127);
          }
-      }
-      if (adi_digital_read(LIMITSWITCHPORT) == 1 && armed < 2)
-      {
-         delay(150);
-         if (adi_digital_read(LIMITSWITCHPORT) == 1)
+         delay(145);
+         motor_move(PORT_FLYWHEEL, -10);
+         motor_move(PORT_INDEXER, -127);
+         while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2) == 1)
          {
-            indexerDirection = 1;
-
-            if (armed == 0)
-            {
-               motor_move(PORT_INDEXER, -127);
-               delay(170);
-               motor_move(PORT_INDEXER, 0);
-               indexerDirection = 0;
-               while (adi_digital_read(LIMITSWITCHPORT) == 1 && controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 0)
-               {
-                  delay(100);
-               }
-            }
-            else
-            {
-               motor_move(PORT_INDEXER, -127);
-               delay(170);
-               motor_move(PORT_INDEXER, 0);
-            }
-
-            indexerDirection = 0;
-            //assignIndexerFree(currentFlywheelPower + FRICTIONPOWER);
-
-            armed += 1;
+            delay(20); //wait
          }
-      }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_DOWN))
-      {
-         armed = 0;
-      }
-      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2))
-      {
-         armed = 1;
+         motor_move(PORT_INDEXER, 0);
+
+         indexerInUse = false;
+         scraperInUse = false;*/
+
+         lockDriveMotors();
+
+         indexerInUse = true;
+         scraperInUse = true;
+
+         motor_move(PORT_FLYWHEEL, -60);
+         motor_move(PORT_INDEXER, -127);
+
+         int prevVal = adi_digital_read(LIMITSWITCHPORT);
+         while (prevVal == adi_digital_read(LIMITSWITCHPORT) || adi_digital_read(LIMITSWITCHPORT) == 1)
+         {
+            prevVal = adi_digital_read(LIMITSWITCHPORT);
+            delay(5);
+         }
+
+         motor_move(PORT_INDEXER, -127);
+         motor_move(PORT_FLYWHEEL, -127);
+         delay(250);
+
+         indexerInUse = false;
+         scraperInUse = false;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
       {
          lockDriveMotors();
       }
+      delay(20);
+   }
+}
+
+void scraper(void *param)
+{
+   while (true)
+   {
+      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2))
+      {
+         scraperInUse = true;
+         motor_move_relative(PORT_FLYWHEEL, SCRAPER_DOWN_POS, 600);
+         while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2))
+         {
+         }
+         motor_move(PORT_FLYWHEEL, 0);
+         scraperInUse = false;
+      }
+
       delay(20);
    }
 }
@@ -468,7 +296,7 @@ void displayInfo(void *param)
       sprintf(tempString2, "Current Flywheel RPM: %d", abs(motor_get_actual_velocity(PORT_FLYWHEEL)));
       sprintf(tempString3, "Indexer Temperature: %d", (int)motor_get_temperature(PORT_INDEXER));
       sprintf(tempString4, "Cur Power: %d", currentAssignedFlywheelPower);
-      sprintf(tempString5, "Indexer Direction: %d", indexerDirection);
+      sprintf(tempString5, "Indexer Direction: %d", indexerInUse);
       sprintf(tempString6, "Battery Voltage: %d", battery_get_voltage());
 
       lcd_set_text(1, tempString1);
@@ -486,11 +314,10 @@ void displayInfo(void *param)
 
 void opcontrol()
 {
-
-   //delay(500);
    task_t driveTask = task_create(drive, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Drive Task");
    task_t flywheelTask = task_create(flywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
    task_t indexerTask = task_create(indexer, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Indexer Task");
+   task_t scraperTask = task_create(scraper, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Indexer Task");
    task_t displayInfoTask = task_create(displayInfo, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Display Info Task");
 
    //lvglInfo();
