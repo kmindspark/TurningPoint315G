@@ -9,8 +9,8 @@
 #define PORT_DRIVERIGHTCENTER 15
 #define PORT_DRIVELEFTFRONT 10
 
-#define HIGHFLAGPOWER 95 //125
-#define HIGHFLAGRPM 420
+#define HIGHFLAGPOWER 90 //125
+#define HIGHFLAGRPM 390
 #define MIDDLEFLAGPOWER 80 //77
 #define MIDDLEFLAGRPM 400
 #define BETWEENFLAGPOWER 99
@@ -36,8 +36,8 @@
 
 #define DIFFBRAKE 6
 
-#define KP 0.1          //0.7          //0.7          //0.6
-#define KI 0.005        //0.005        //0.005        //0.005             //0.02
+#define KP 0.7          //0.7          //0.7          //0.7          //0.6
+#define KI 0.005        //0.005        //0.005        //0.005        //0.005             //0.02
 #define INTEGRALLIMIT 6 //4
 
 #define DRIVEP 0.070  //t 0.085
@@ -45,7 +45,7 @@
 #define DRIVED 0.083  //t 0.14 //0.69   //1.0
 #define TDRIVEP 0.205 //0.085
 #define TDRIVEI 0.013 //01
-#define TDRIVED 0.1   //0.69   //1.0
+#define TDRIVED 0.08  //0.69   //1.0
 #define DRIVEINTEGRALLIMIT 1000
 #define DRIVEMAXVEL 1
 #define DRIVEPOSTOL 15

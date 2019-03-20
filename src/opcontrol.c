@@ -156,9 +156,9 @@ void flywheel(void *param)
          motor_move(PORT_INDEXER, -127);
          scraperInUse = true;
          motor_move(PORT_FLYWHEEL, -127);
-         delay(145);
-         motor_move_relative(PORT_FLYWHEEL, 0, 50);
-         delay(200);
+         delay(205);
+         motor_move(PORT_FLYWHEEL, -10);
+         delay(300);
          scraperInUse = false;
          indexerInUse = false;
       }

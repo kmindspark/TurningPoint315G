@@ -148,10 +148,11 @@ void assignDriveMotorsDistNew(int leftSide, int rightSide, int power, bool turn)
       prevRightError = rightError;
 
       int rightCorrection = rightError - leftError;
-      double CORR = 1; //0.60;
+      double CORR = 0.8; //0.60;
       if (abs(rightError) < 1050 && abs(leftError) < 1050 && rightSide > 1050 && leftSide > 1050)
       {
-         rightCorrection = rightCorrection - 100; // - 70;
+         rightCorrection = rightCorrection - 30;
+         //120; // - 70;
       }
       if (abs(rightError) < 550 && abs(leftError) < 550)
       {
@@ -604,13 +605,20 @@ void fullAutonFront(bool park, bool redAlliance, bool twoflags, bool skills)
 
 void mainAutonFront(bool redAlliance)
 {
-   setFlywheelSpeed(HIGHFLAGPOWER - 8, HIGHFLAGRPM - 45);
+   setFlywheelSpeed(HIGHFLAGPOWER, HIGHFLAGRPM);
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
 
    //Pick up ball and return
-   forward(2250, 170);
+   forwardCoast(250, 40);
+   forwardCoast(1350, 127);
+   forwardCoast(250, 80);
+   forwardCoast(450, 40);
+   assignDriveMotorsPower(-10, -10 - DIFFBRAKE);
+   delay(200);
+   assignDriveMotorsPower(0, 0);
+
    backward(2380, 170);
-   assignDriveMotorsPower(-40, -40);
+   assignDriveMotorsPower(-25, -25);
    setIndexerPower(-127);
    delay(90);
    setIndexerPower(0);
@@ -618,10 +626,11 @@ void mainAutonFront(bool redAlliance)
    assignDriveMotorsPower(0, 0);
 
    //Go shoot middle column
-   forward(200, 200);
-   turnRight(385, 100, redAlliance);
-   forward(1050, 200);
+   forward(200, 80);
+   turnRight(390, 120, redAlliance);
+   forwardCoast(850, 80);
    rapidFire = true;
+   forward(200, 80);
 
    delay(900);
    setFlywheelSpeed(HIGHFLAGPOWER, HIGHFLAGRPM);
@@ -636,11 +645,7 @@ void mainAutonFront(bool redAlliance)
    delay(500);
 
    motor_move_relative(PORT_FLYWHEEL, -200, 50);
-   backward(600, 200);
-   motor_move(PORT_FLYWHEEL, -127);
-   //forward(200, 100);
-   delay(300);
-   motor_move(PORT_FLYWHEEL, -15);
+   backward(800, 127);
 
    scraperInUseAuton = false;
    turnLeft(RIGHTANGLETURN / 2, 100, redAlliance);
@@ -655,7 +660,7 @@ void mainAutonFront(bool redAlliance)
    setIndexerPower(0);
    turnRight(RIGHTANGLETURN, 100, redAlliance);
 
-   backward(500, 127);
+   forward(500, 80);
 
    rapidFire = true;
 
