@@ -153,11 +153,12 @@ void flywheel(void *param)
             delay(5);
          }
 
+         delay(50);
          motor_move(PORT_INDEXER, -127);
          scraperInUse = true;
          motor_move(PORT_FLYWHEEL, -127);
-         delay(205);
-         motor_move(PORT_FLYWHEEL, -10);
+         delay(145);
+         motor_move_relative(PORT_FLYWHEEL, 100, 50);
          delay(300);
          scraperInUse = false;
          indexerInUse = false;
@@ -199,57 +200,37 @@ void indexer(void *param)
       {
          indexerInUse = true;
          lockDriveMotors();
-         motor_move(PORT_INDEXER, -127);
          motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower + EXTRAPOWER);
+         //delay(180);
+         motor_move(PORT_INDEXER, -127);
+         //delay(80);
+
          while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 1)
          {
             delay(20);
             //wait
          }
-         indexerInUse = false;
          motor_move(PORT_INDEXER, 0);
+         indexerInUse = false;
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2) == 1)
       {
-         /*indexerInUse = true;
+         lockDriveMotors();
+
          scraperInUse = true;
-         lockDriveMotors();
          motor_move(PORT_FLYWHEEL, -127);
-         if (adi_digital_read(LIMITSWITCHPORT) == 0)
+         if (adi_digital_read(LIMITSWITCHPORT) == 1)
          {
-            motor_move(PORT_INDEXER, -127);
+            delay(100);
          }
-         delay(145);
-         motor_move(PORT_FLYWHEEL, -10);
-         motor_move(PORT_INDEXER, -127);
-         while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2) == 1)
-         {
-            delay(20); //wait
-         }
-         motor_move(PORT_INDEXER, 0);
-
-         indexerInUse = false;
-         scraperInUse = false;*/
-
-         lockDriveMotors();
 
          indexerInUse = true;
-
          motor_move(PORT_INDEXER, -127);
-         delay(200);
-         scraperInUse = true;
-         motor_move(PORT_FLYWHEEL, -80);
 
-         int prevVal = adi_digital_read(LIMITSWITCHPORT);
-         while (prevVal == adi_digital_read(LIMITSWITCHPORT) || adi_digital_read(LIMITSWITCHPORT) == 1)
+         while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L2))
          {
-            prevVal = adi_digital_read(LIMITSWITCHPORT);
-            delay(5);
+            delay(10);
          }
-
-         motor_move(PORT_INDEXER, -127);
-         motor_move(PORT_FLYWHEEL, -127);
-         delay(250);
 
          indexerInUse = false;
          scraperInUse = false;
@@ -268,12 +249,30 @@ void scraper(void *param)
    {
       if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2))
       {
-         scraperInUse = true;
+         if (!scraperInUse)
+         {
+            motor_tare_position(PORT_FLYWHEEL);
+            scraperInUse = true;
+         }
+
          motor_move(PORT_FLYWHEEL, -127);
          while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_R2))
          {
+            delay(10);
          }
-         motor_move(PORT_FLYWHEEL, -10);
+
+         if (motor_get_position(PORT_FLYWHEEL) < SCRAPER_DOWN_POS)
+         {
+            motor_move(PORT_FLYWHEEL, -4);
+            //motor_move_absolute(PORT_FLYWHEEL, SCRAPER_DOWN_POS, 50);
+         }
+         else
+         {
+            scraperInUse = false;
+         }
+      }
+      if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
+      {
          scraperInUse = false;
       }
 

@@ -9,10 +9,10 @@
 #define PORT_DRIVERIGHTCENTER 15
 #define PORT_DRIVELEFTFRONT 10
 
-#define HIGHFLAGPOWER 90 //125
-#define HIGHFLAGRPM 390
+#define HIGHFLAGPOWER 93 //125
+#define HIGHFLAGRPM 436
 #define MIDDLEFLAGPOWER 80 //77
-#define MIDDLEFLAGRPM 400
+#define MIDDLEFLAGRPM 374
 #define BETWEENFLAGPOWER 99
 #define BETWEEENFLAGRPM 530
 
@@ -36,7 +36,7 @@
 
 #define DIFFBRAKE 6
 
-#define KP 0.7          //0.7          //0.7          //0.7          //0.6
+#define KP 0.12         //0.7          //0.7          //0.7          //0.6
 #define KI 0.005        //0.005        //0.005        //0.005        //0.005             //0.02
 #define INTEGRALLIMIT 6 //4
 
@@ -51,7 +51,7 @@
 #define DRIVEPOSTOL 15
 
 #define SCRAPER_HOOD_POS -200
-#define SCRAPER_DOWN_POS -570
+#define SCRAPER_DOWN_POS -400
 
 extern int autonNumber;
 extern bool redAlliance;
