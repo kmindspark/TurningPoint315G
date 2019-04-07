@@ -153,7 +153,7 @@ void flywheel(void *param)
             delay(5);
          }
 
-         delay(50);
+         delay(00);
          motor_move(PORT_INDEXER, -127);
          scraperInUse = true;
          motor_move(PORT_FLYWHEEL, -127);
@@ -187,6 +187,12 @@ void flywheel(void *param)
             motor_move(PORT_FLYWHEEL, currentAssignedFlywheelPower);
          }
          assignIndexerFree(currentAssignedFlywheelPower + FRICTIONPOWER);
+
+         /*if (difference < -70)
+         {
+            motor_move(PORT_FLYWHEEL, 0);
+            delay(150);
+         }*/
       }
       delay(20);
    }
@@ -207,9 +213,15 @@ void indexer(void *param)
 
          while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 1)
          {
+            //int prevLim = adi_digital_read(LIMITSWITCHPORT);
             delay(20);
-            //wait
+            /*if (prevLim != adi_digital_read(LIMITSWITCHPORT) && adi_digital_read(LIMITSWITCHPORT) == 0)
+            {
+               delay(100);
+               break;
+            }*/
          }
+
          motor_move(PORT_INDEXER, 0);
          indexerInUse = false;
       }
@@ -234,6 +246,15 @@ void indexer(void *param)
 
          indexerInUse = false;
          scraperInUse = false;
+      }
+      else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_RIGHT))
+      {
+         indexerInUse = true;
+         motor_move(PORT_INDEXER, -127);
+         delay(120);
+         motor_move(PORT_INDEXER, 0);
+         indexerInUse = false;
+         delay(250);
       }
       else if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_UP))
       {
@@ -263,7 +284,7 @@ void scraper(void *param)
 
          if (motor_get_position(PORT_FLYWHEEL) < SCRAPER_DOWN_POS)
          {
-            motor_move(PORT_FLYWHEEL, -4);
+            motor_move(PORT_FLYWHEEL, -7);
             //motor_move_absolute(PORT_FLYWHEEL, SCRAPER_DOWN_POS, 50);
          }
          else
@@ -274,6 +295,7 @@ void scraper(void *param)
       if (controller_get_digital(CONTROLLER_MASTER, DIGITAL_Y))
       {
          scraperInUse = false;
+         delay(200);
       }
 
       delay(20);
