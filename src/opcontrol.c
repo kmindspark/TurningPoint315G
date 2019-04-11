@@ -16,6 +16,7 @@ int numVisionObjects = 0;
 bool readyToMove = false;
 
 int armed = 0;
+adi_gyro_t gyro;
 
 #define max(a, b) \
    ({ __typeof__ (a) _a = (a); \
@@ -213,13 +214,13 @@ void indexer(void *param)
 
          while (controller_get_digital(CONTROLLER_MASTER, DIGITAL_L1) == 1)
          {
-            //int prevLim = adi_digital_read(LIMITSWITCHPORT);
+            int prevLim = adi_digital_read(LIMITSWITCHPORT);
             delay(20);
-            /*if (prevLim != adi_digital_read(LIMITSWITCHPORT) && adi_digital_read(LIMITSWITCHPORT) == 0)
+            if (prevLim != adi_digital_read(LIMITSWITCHPORT) && adi_digital_read(LIMITSWITCHPORT) == 0)
             {
-               delay(100);
+               delay(20);
                break;
-            }*/
+            }
          }
 
          motor_move(PORT_INDEXER, 0);
@@ -230,7 +231,8 @@ void indexer(void *param)
          lockDriveMotors();
 
          scraperInUse = true;
-         motor_move(PORT_FLYWHEEL, -127);
+         motor_move_relative(PORT_FLYWHEEL, SCRAPER_HOOD_POS, 600);
+
          if (adi_digital_read(LIMITSWITCHPORT) == 1)
          {
             delay(100);
@@ -318,7 +320,7 @@ void displayInfo(void *param)
       sprintf(tempString2, "Current Flywheel RPM: %d", abs(motor_get_actual_velocity(PORT_FLYWHEEL)));
       sprintf(tempString3, "Indexer Temperature: %d", (int)motor_get_temperature(PORT_INDEXER));
       sprintf(tempString4, "Cur Power: %d", currentAssignedFlywheelPower);
-      sprintf(tempString5, "Indexer Direction: %d", indexerInUse);
+      sprintf(tempString5, "Gyro Value: %d", (int)adi_gyro_get(gyro));
       sprintf(tempString6, "Battery Voltage: %d", battery_get_voltage());
 
       lcd_set_text(1, tempString1);

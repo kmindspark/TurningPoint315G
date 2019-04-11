@@ -2,8 +2,10 @@
 
 int autonNumber = 0;
 bool redAlliance = false;
+adi_gyro_t gyro;
 
 #define NUMAUTONS 6
+#define GYRO_MULTIPLIER 1
 
 static const char *btnm_map[] = {"Mid Side", "Side Mid", "Back Ctr", ""};
 static const char *auton_strings[] = {"Mid Side", "Side Mid", "Back Ctr"};
@@ -82,6 +84,7 @@ void initialize()
    initializeDriveMotors();
    initializeFlywheelMotors();
    adi_port_set_config(LIMITSWITCHPORT, E_ADI_DIGITAL_IN);
+   gyro = adi_gyro_init(GYROPORT, GYRO_MULTIPLIER);
 }
 
 void disabled() {}
@@ -91,8 +94,12 @@ void competition_initialize()
    lv_theme_alien_init(190, NULL);
 
    lv_obj_t *title = lv_label_create(lv_scr_act(), NULL);
-   lv_label_set_text(title, "Auton Selection");
+   lv_label_set_text(title, "Initializing gyro ...");
    lv_obj_align(title, NULL, LV_ALIGN_IN_TOP_MID, 0, 10);
+   delay(1000);
+   gyro = adi_gyro_init(GYROPORT, GYRO_MULTIPLIER);
+
+   lv_label_set_text(title, "Auton Selection");
 
    lv_obj_t *btnm = lv_btnm_create(lv_scr_act(), NULL);
    lv_btnm_set_map(btnm, btnm_map);

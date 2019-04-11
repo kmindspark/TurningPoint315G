@@ -8,6 +8,8 @@
 #define PORT_VISION 16
 #define PORT_DRIVERIGHTCENTER 15
 #define PORT_DRIVELEFTFRONT 10
+#define GYROPORT 5
+#define GYRODRIFTRATE -2.7 //-1.1
 
 #define HIGHFLAGPOWER 90 //93 //125
 #define HIGHFLAGRPM 436
@@ -22,7 +24,6 @@
 #define BACKTILERPM 594
 
 #define LIMITSWITCHPORT 3
-
 #define NUM_VISION_OBJECTS 2
 #define VISIONTARGETSIG 3
 #define REDFLAGSIG 2
@@ -36,23 +37,27 @@
 
 #define DIFFBRAKE 4
 
-#define KP 0.12         //0.08         //0.7          //0.7          //0.7          //0.6
-#define KI 0.005        //0.005        //0.005        //0.005        //0.005        //0.005             //0.02
-#define INTEGRALLIMIT 6 //4
+#define KP 0.12
+#define KI 0.005
+#define INTEGRALLIMIT 6
 
-#define DRIVEP 0.070  //t 0.085
-#define DRIVEI 0.0075 //t 0.01 //01
-#define DRIVED 0.083  //t 0.14 //0.69   //1.0
-#define TDRIVEP 0.210 //0.085
-#define TDRIVEI 0.013 //01
-#define TDRIVED 0.15  //0.69   //1.0
-#define CORRD 0.15
+#define DRIVEP 0.075
+#define DRIVEI 0.0075
+#define DRIVED 0.075
+#define CORRD 0.25
+#define TDRIVEP 0.130
+#define TDRIVEI 0.0089
+#define TDRIVED 0.04
 #define DRIVEINTEGRALLIMIT 1000
 #define DRIVEMAXVEL 1
-#define DRIVEPOSTOL 15
+#define DRIVEPOSTOL 50
+#define TDRIVEINTEGRALLIMIT 1000
+#define TDRIVEMAXVEL 2
+#define TDRIVEPOSTOL 2
 
 #define SCRAPER_HOOD_POS -200
 #define SCRAPER_DOWN_POS -400
 
 extern int autonNumber;
 extern bool redAlliance;
+extern adi_gyro_t gyro;
