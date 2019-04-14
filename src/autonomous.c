@@ -112,6 +112,10 @@ void assignDriveMotorsDist(int leftSide, int rightSide, int power, bool clear, b
 
 void straightPID(int leftSide, int rightSide, int power, int heading)
 {
+   leftSide *= 200.0 / 257.0;
+   rightSide *= 200.0 / 257.0;
+   power *= 200.0 / 257.0;
+
    if (redAlliance)
    {
       heading = -heading;
@@ -282,6 +286,9 @@ void oneSideRightEnc(int ticks, int power, bool reversed)
 
 void coast(int ticks, int power, int heading)
 {
+   ticks *= 200.0 / 257.0;
+   power *= 200.0 / 257.0;
+
    if (redAlliance)
    {
       heading = -heading;

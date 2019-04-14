@@ -13,18 +13,18 @@ static const char *alliance_map[] = {"Red", "Blue", ""};
 
 void initializeDriveMotors()
 {
-   motor_set_gearing(PORT_DRIVELEFTFRONT, E_MOTOR_GEARSET_18);
-   motor_set_gearing(PORT_DRIVERIGHTFRONT, E_MOTOR_GEARSET_18);
-   motor_set_gearing(PORT_DRIVELEFTBACK, E_MOTOR_GEARSET_18);
-   motor_set_gearing(PORT_DRIVERIGHTBACK, E_MOTOR_GEARSET_18);
-   motor_set_gearing(PORT_DRIVELEFTCENTER, E_MOTOR_GEARSET_18);
-   motor_set_gearing(PORT_DRIVERIGHTCENTER, E_MOTOR_GEARSET_18);
-   motor_set_reversed(PORT_DRIVELEFTFRONT, false);
-   motor_set_reversed(PORT_DRIVERIGHTFRONT, true);
-   motor_set_reversed(PORT_DRIVELEFTBACK, false);
-   motor_set_reversed(PORT_DRIVERIGHTBACK, true);
-   motor_set_reversed(PORT_DRIVELEFTCENTER, false);
-   motor_set_reversed(PORT_DRIVERIGHTCENTER, true);
+   motor_set_gearing(PORT_DRIVELEFTFRONT, E_MOTOR_GEARSET_06);
+   motor_set_gearing(PORT_DRIVERIGHTFRONT, E_MOTOR_GEARSET_06);
+   motor_set_gearing(PORT_DRIVELEFTBACK, E_MOTOR_GEARSET_06);
+   motor_set_gearing(PORT_DRIVERIGHTBACK, E_MOTOR_GEARSET_06);
+   motor_set_gearing(PORT_DRIVELEFTCENTER, E_MOTOR_GEARSET_06);
+   motor_set_gearing(PORT_DRIVERIGHTCENTER, E_MOTOR_GEARSET_06);
+   motor_set_reversed(PORT_DRIVELEFTFRONT, true);
+   motor_set_reversed(PORT_DRIVERIGHTFRONT, false);
+   motor_set_reversed(PORT_DRIVELEFTBACK, true);
+   motor_set_reversed(PORT_DRIVERIGHTBACK, false);
+   motor_set_reversed(PORT_DRIVELEFTCENTER, true);
+   motor_set_reversed(PORT_DRIVERIGHTCENTER, false);
 
    //motor_pid_s_t pid = motor_convert_pid(0.0, DRIVEP, DRIVEI, DRIVED);
 
