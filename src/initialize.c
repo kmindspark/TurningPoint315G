@@ -7,8 +7,9 @@ adi_gyro_t gyro;
 #define NUMAUTONS 6
 #define GYRO_MULTIPLIER 1
 
-static const char *btnm_map[] = {"Mid Side", "Side Mid", "Back Ctr", ""};
-static const char *auton_strings[] = {"Mid Side", "Side Mid", "Back Ctr"};
+static const char *btnm_map[] = {"Mid Side", "Side Mid", "\n", "Side Ctr", "Back Ctr", ""};
+static const char *auton_strings[] = {"Mid Side", "Side Mid", "Side Ctr"
+                                                              "Back Ctr"};
 static const char *alliance_map[] = {"Red", "Blue", ""};
 
 void initializeDriveMotors()
