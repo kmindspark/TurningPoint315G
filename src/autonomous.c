@@ -21,6 +21,7 @@ bool backRapidFire = false;
 bool flywheelOff = false;
 bool rpmShot = false;
 int currentBrakingTime = 110;
+bool ballShot = false;
 
 uint32_t programStartTime = 0;
 
@@ -264,13 +265,14 @@ void turnRightEnc(int ticks, int power, bool reversed)
 
 void oneSideLeftEnc(int ticks, int power, bool reversed)
 {
+
    if (reversed)
    {
       oneSideRightEnc(ticks, power, false);
    }
    else
    {
-      assignDriveMotorsDist(0, ticks, power, true, true);
+      assignDriveMotorsDist(0, ticks * 200.0 / 257.0, power, true, true);
    }
 }
 
@@ -282,7 +284,7 @@ void oneSideRightEnc(int ticks, int power, bool reversed)
    }
    else
    {
-      assignDriveMotorsDist(ticks, 0, power, true, true);
+      assignDriveMotorsDist(ticks * 200.0 / 257.0, 0, power, true, true);
    }
 }
 
@@ -447,6 +449,8 @@ void autonFlywheel(void *param)
             delay(5);
          }
 
+         ballShot = true;
+
          delay(00);
 
          if (rpmShot)
@@ -467,7 +471,7 @@ void autonFlywheel(void *param)
             setIndexerPower(0);
             if (true)
             {
-               delay(150);
+               delay(800);
             }
             indexerInUseAuton = true;
             setIndexerPower(-127);
@@ -562,29 +566,40 @@ void fullAutonFront(bool redAlliance, bool middleCol)
 
    rapidFire = true;
    delay(300);
-   setFlywheelSpeed(HIGHFLAGPOWER + 30, HIGHFLAGRPM + 150);
+   if (middleCol)
+   {
+      setFlywheelSpeed(HIGHFLAGPOWER + 30, HIGHFLAGRPM + 150);
+   }
+   else
+   {
+      setFlywheelSpeed(BACKTILEPOWER - 10, BACKTILERPM - 50);
+   }
 
    forwardCoast(60, 70, RIGHTANGLETURN);
    scraperInUseAuton = false;
    forwardCoast(220, 80, RIGHTANGLETURN);
    forwardCoast(200, 90, RIGHTANGLETURN);
+   setIndexerPower(-127);
 
    int tinyTurn = 80;
    //turnRight(RIGHTANGLETURN + tinyTurn, 80);
 
-   forwardCoast(1400, 90, RIGHTANGLETURN + tinyTurn);
-   forward(100, 40, RIGHTANGLETURN + tinyTurn);
+   forwardCoast(1550, 90, RIGHTANGLETURN + tinyTurn); //1400
+   assignDriveMotorsPower(-3, -3);
+   delay(150);
+   assignDriveMotorsPower(0, 0);
+   //forward(100, 40, RIGHTANGLETURN + tinyTurn);
 
-   setIndexerPower(-127);
+   delay(300);
 
    // Thwack the low flag
-   scraperInUseAuton = true;
+   /*scraperInUseAuton = true;
    motor_move(PORT_FLYWHEEL, -127);
    delay(400);
-   scraperInUseAuton = false;
+   scraperInUseAuton = false;*/
 
    backwardCoast(100, 60, RIGHTANGLETURN);
-   backwardCoast(1680, 127, RIGHTANGLETURN);
+   backwardCoast(1830, 127, RIGHTANGLETURN);
    backwardCoast(350, 40, RIGHTANGLETURN);
    assignDriveMotorsPower(3, 3);
    delay(100);
@@ -600,7 +615,7 @@ void fullAutonFront(bool redAlliance, bool middleCol)
    indexerInUseAuton = true;
    motor_move(PORT_INDEXER, 0);
 
-   forwardCoast(920, 90, curTurnedValue);
+   forwardCoast(860, 90, curTurnedValue);
    assignDriveMotorsPower(-2, -2);
    delay(150);
    assignDriveMotorsPower(0, 0);
@@ -649,20 +664,18 @@ void fullAutonFront(bool redAlliance, bool middleCol)
    }
    else
    {
-      setFlywheelSpeed(BACKTILEPOWER - 3, BACKTILERPM - 15);
+      int turnAmt = 234;
+      turnRight(turnAmt, 80);
 
-      turnRight(280, 80);
-      forward(500, 100, 150);
+      setIndexerPower(-110); //-127
+      int prevVal = adi_digital_read(LIMITSWITCHPORT);
+      while (prevVal == adi_digital_read(LIMITSWITCHPORT) || adi_digital_read(LIMITSWITCHPORT) == 1)
+      {
+         prevVal = adi_digital_read(LIMITSWITCHPORT);
+         delay(5);
+      }
 
-      rpmShot = true;
-      rapidFire = true;
-
-      delay(300);
-
-      moveScraper(SCRAPER_DOWN_POS);
-      delay(300);
-
-      setIndexerPower(-127);
+      backwardCoast(1000, 10, turnAmt);
    }
 }
 
@@ -697,7 +710,7 @@ void mainAutonFront(bool redAlliance)
    forwardCoast(50, 70, 0);
    delay(200);
 
-   int curTurnedValue = 475;
+   int curTurnedValue = 455; //475
    turnRight(curTurnedValue, 80);
 
    indexerInUseAuton = true;
@@ -718,7 +731,7 @@ void mainAutonFront(bool redAlliance)
    backwardCoast(50, 30, curTurnedValue);
    indexerInUseAuton = false;
    motor_move(PORT_FLYWHEEL, -20);
-   backwardCoast(120, 60, curTurnedValue);
+   backwardCoast(150, 60, curTurnedValue);
 
    motor_move_relative(PORT_FLYWHEEL, 120, 70);
    delay(300);
@@ -780,7 +793,7 @@ void mainAutonFront(bool redAlliance)
 void newBackAuton(bool redAlliance)
 {
    int32_t now = millis();
-   setFlywheelSpeed(HIGHFLAGPOWER - 5, HIGHFLAGRPM - 27);
+   setFlywheelSpeed(BACKTILEPOWER, BACKTILERPM);
    task_t flywheelTask = task_create(autonFlywheel, "PROS", TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Task");
 
    // Pick up ball from cap
@@ -793,14 +806,14 @@ void newBackAuton(bool redAlliance)
 
    if (redAlliance)
    {
-      backwardCoast(200, 60, 0);
+      backwardCoast(175, 60, 0);
    }
    else
    {
-      backwardCoast(225, 60, 0);
+      backwardCoast(200, 60, 0);
    }
 
-   turnRightEnc(OLDRIGHTANGLETURN + 60, 70, redAlliance);
+   turnRight(RIGHTANGLETURN, 100);
 
    indexerInUseAuton = true;
    setIndexerPower(-1);
@@ -811,7 +824,9 @@ void newBackAuton(bool redAlliance)
 
    delay(200);
 
-   assignDriveMotorsPower(50, 50);
+   assignDriveMotorsPower(-60, -60);
+   delay(170);
+   assignDriveMotorsPower(3, 3);
    delay(100);
    indexerInUseAuton = true;
 
@@ -821,7 +836,7 @@ void newBackAuton(bool redAlliance)
    }
    else
    {
-      oneSideRightEnc(-580, 100, redAlliance);
+      oneSideRightEnc(-560, 100, redAlliance);
    }
 
    indexerInUseAuton = false;
@@ -840,7 +855,7 @@ void newBackAuton(bool redAlliance)
 
    backRapidFire = true;
 
-   delay(1000);
+   delay(1500);
 
    flywheelOff = true;
    indexerInUseAuton = true;
@@ -876,8 +891,8 @@ void autonomous()
       newBackAuton(redAlliance);
       break;
    default:
-      redAlliance = true;
-      fullAutonFront(true, false);
+      redAlliance = false;
+      newBackAuton(false);
       break;
    }
 }
